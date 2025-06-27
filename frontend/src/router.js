@@ -6,6 +6,8 @@ import Customers from "./pages/costomers/Customers";
 import CustomersCreate from "./pages/costomers/CustomersCreate";
 import CustomerEdit from "./pages/costomers/CustomerEdit";
 import CustomerShow from "./pages/costomers/CustomerShow";
+import Invoices from "./pages/invoices/Invoices";
+import InvoiceCreate from "./pages/invoices/InvoiceCreate";
 
 async function getCustomer(id) {
   const result = await window.electronAPI.getCustomerById(id);
@@ -34,6 +36,13 @@ const router = createBrowserRouter([
             loader: async ({ params }) =>
               await getCustomer(parseInt(params.id)),
           },
+        ],
+      },
+      {
+        path: "invoices",
+        children: [
+          { index: true, Component: Invoices },
+          { path: "create", Component: InvoiceCreate },
         ],
       },
     ],

@@ -36,7 +36,7 @@ const initSchema = () => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       customer_id INTEGER NOT NULL,
       number TEXT NOT NULL UNIQUE,
-      date DATE NOT NULL,
+      date TEXT NOT NULL,
       total REAL NOT NULL,
       bank_number TEXT,
       type TEXT CHECK(type IN ('sell', 'buy')) NOT NULL,
@@ -50,7 +50,7 @@ const initSchema = () => {
       invoice_id INTEGER NOT NULL,
       title TEXT NOT NULL,
       fee INTEGER NOT NULL,
-      qty INTEGER NOT NULL,
+      qty REAL NOT NULL,
       FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE
     );
 

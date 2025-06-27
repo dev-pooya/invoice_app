@@ -1,0 +1,23 @@
+{
+  "name": "invoice_app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "electron/main.js",
+  "scripts": {
+    "electron": "electron electron/main.js",
+    "build": "npm run build --prefix frontend",
+    "dev": "electronmon ."
+  },
+  "keywords": [],
+  "author": "dev-pooya",
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^12.1.0"
+  },
+  "devDependencies": {
+    "electron": "36.5.0",
+    "electron-rebuild": "^3.2.9",
+    "electron-reload": "^2.0.0-alpha.1",
+    "electronmon": "^2.0.3"
+  }
+}

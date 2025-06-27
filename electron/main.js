@@ -1,10 +1,18 @@
 // electron/main.js
-const { app, BrowserWindow, ipcMain, Menu, dialog } = require("electron");
+const {
+  app,
+  BrowserWindow,
+  ipcMain,
+  Menu,
+  dialog,
+  protocol,
+} = require("electron");
 const path = require("path");
 const fs = require("fs");
 
 const {
   createCustomer,
+  editCustomer,
   isNationalIdDuplicate,
   getLatestCustomers,
   searchCustomers,
@@ -28,7 +36,23 @@ function createWindow() {
   win.webContents.openDevTools(); // ← This opens DevTools automatically
 }
 
+// solve the file view problem
+const protocolName = "secure-image";
+protocol.registerSchemesAsPrivileged([
+  { scheme: protocolName, privileges: { bypassCSP: true } },
+]);
+
 app.whenReady().then(() => {
+  protocol.registerFileProtocol(protocolName, (request, callback) => {
+    const url = request.url.replace(`${protocolName}://`, "");
+    try {
+      return callback(decodeURIComponent(url));
+    } catch (error) {
+      // Handle the error as needed
+      console.error(error);
+    }
+  });
+
   // Load DB module AFTER app is ready
   // console.log("ready 1");
   // const { db, initSchema } = require("./db");
@@ -94,6 +118,47 @@ ipcMain.handle("customers:add", (event, data) => {
 
   const id = createCustomer({ ...data, national_card_path: storedFilePath });
   return { success: true, id };
+});
+
+// edit customer
+ipcMain.handle("customers:edit", (event, data) => {
+  // get the customer from db
+  const oldCustomer = getCustomerById(data.id);
+
+  if (
+    oldCustomer.national_id_number !== data.national_id_number &&
+    isNationalIdDuplicate(data.national_id_number)
+  ) {
+    return { success: false, error: "کد ملی تکراری است" };
+  }
+
+  // Upload the file if provided
+  let storedFilePath = oldCustomer.national_card_path || "";
+  if (data.filePath) {
+    // delete the prev image
+    if (
+      oldCustomer.national_card_path &&
+      fs.existsSync(oldCustomer.national_card_path)
+    ) {
+      fs.unlinkSync(oldCustomer.national_card_path);
+    }
+    // upload the file
+    const uploadsDir = path.join(app.getPath("userData"), "uploads");
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+
+    const ext = path.extname(data.filePath);
+    const random = Math.floor(1000 + Math.random() * 9000);
+    const filename = `${data.national_id_number}-${random}${ext}`;
+    const destination = path.join(uploadsDir, filename);
+
+    fs.copyFileSync(data.filePath, destination);
+    storedFilePath = destination;
+  }
+
+  const changes = editCustomer({ ...data, national_card_path: storedFilePath });
+  return { success: true, changes };
 });
 
 // ipc for pick file

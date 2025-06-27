@@ -6,15 +6,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { AlertCircleIcon, CheckCircle2Icon, PopcornIcon } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useLoaderData, useParams } from "react-router";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 
 function CustomerEdit() {
   const [submitionResult, setSubmitionResult] = useState(null);
@@ -28,7 +19,6 @@ function CustomerEdit() {
   useEffect(() => {
     setForm(customer);
     setFilePath(customer.national_card_path);
-    console.log(customer);
   }, []);
 
   // handle change
@@ -61,9 +51,9 @@ function CustomerEdit() {
 
     const formData = {
       ...form,
-      filePath: filePath || "",
+      filePath: filePath === customer.national_card_path ? null : filePath,
     };
-
+    console.log(formData);
     const result = await window.electronAPI.editCustomer(formData);
     setSubmitionResult(result);
   }
@@ -98,21 +88,6 @@ function CustomerEdit() {
   return (
     <div className="p-5">
       <h1 className="text-2xl font-semibold mb-5"> ویرایش مشتری </h1>
-      {customer.national_card_path && (
-        <Card className="w-[600px] mb-6">
-          <CardContent>
-            <img
-              src={`file://${customer.national_card_path}`}
-              alt="کارت ملی"
-              className="w-60 h-auto mt-4 border rounded"
-            />
-            <a href={`file://${customer.national_card_path}`}>دانلود تصوی ر</a>
-          </CardContent>
-          <CardFooter>
-            <p>Card Footer</p>
-          </CardFooter>
-        </Card>
-      )}
 
       <form onSubmit={handleSubmit} className="grid gap-3 w-[600px]">
         <div className="flex justify-between items-center ">
@@ -204,6 +179,7 @@ function CustomerEdit() {
             </Button>
           </div>
         </div>
+
         <Button type="submit" size="lg" className="mt-5 cursor-pointer">
           ذخیره تغییرات
         </Button>
@@ -212,9 +188,7 @@ function CustomerEdit() {
             <Alert className="text-green-600">
               <CheckCircle2Icon />
               <AlertTitle>ذخیره شد.</AlertTitle>
-              <AlertDescription>
-                مشتری جدید در برنامه ذخیره شد.
-              </AlertDescription>
+              <AlertDescription>تغییرات انجام شد</AlertDescription>
             </Alert>
           ) : (
             <Alert variant="destructive">
@@ -225,6 +199,13 @@ function CustomerEdit() {
               </AlertDescription>
             </Alert>
           ))}
+        {filePath && (
+          <img
+            src={`secure-image://${filePath}`}
+            alt="کارت ملی"
+            className="max-h-[300px] mt-3"
+          />
+        )}
       </form>
     </div>
   );

@@ -7,5 +7,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
   searchCustomers: (criteria) =>
     ipcRenderer.invoke("customers:search", criteria),
   addCustomer: (data) => ipcRenderer.invoke("customers:add", data),
+  editCustomer: (data) => ipcRenderer.invoke("customers:edit", data),
   pickFile: () => ipcRenderer.invoke("customers:pickFile"),
 });

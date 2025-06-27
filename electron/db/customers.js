@@ -18,6 +18,23 @@ function createCustomer(data) {
   return result.lastInsertRowid;
 }
 
+function editCustomer(data) {
+  const stmt = db.prepare(`
+    UPDATE customers SET full_name = ?, national_id_number = ?, address = ?, phone_number = ?, national_card_path = ?, post_code = ?  WHERE id = ?`);
+
+  const result = stmt.run(
+    data.full_name,
+    data.national_id_number,
+    data.address || "",
+    data.phone_number || "",
+    data.national_card_path || "",
+    data.post_code || "",
+    data.id
+  );
+
+  return result.changes;
+}
+
 function isNationalIdDuplicate(nationalId) {
   const row = db
     .prepare("SELECT 1 FROM customers WHERE national_id_number = ?")
@@ -57,6 +74,7 @@ function searchCustomers(criteria) {
 }
 module.exports = {
   createCustomer,
+  editCustomer,
   isNationalIdDuplicate,
   getAllCustomers,
   getLatestCustomers,

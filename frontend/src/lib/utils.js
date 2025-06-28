@@ -23,3 +23,7 @@ export function getToday() {
 
   return `${year}${month}${day}`;
 }
+
+export function commaSeprate(number) {
+  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "٫");
+}

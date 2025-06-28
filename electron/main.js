@@ -17,13 +17,18 @@ const {
   getLatestCustomers,
   searchCustomers,
   getCustomerById,
+  getCustomerByNationalId,
 } = require("./db/customers");
+
+const { createInvoice, getTodayInvoices } = require("./db/invoices");
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 1800,
-    height: 600,
+    width: 1200,
+    height: 700,
     // titleBarStyle: "hidden", // Optional, good for macOS
+    minWidth: 1200,
+    minHeight: 600,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
@@ -52,32 +57,6 @@ app.whenReady().then(() => {
       console.error(error);
     }
   });
-
-  // Load DB module AFTER app is ready
-  // console.log("ready 1");
-  // const { db, initSchema } = require("./db");
-  // console.log("ready 4");
-
-  // // Setup schema
-  // initSchema();
-
-  // // Insert a test customer
-  // try {
-  //   const insert = db.prepare(
-  //     "INSERT INTO customers (full_name, national_id_number, address, phone_number) VALUES (?, ?, ?, ?)"
-  //   );
-  //   insert.run("کاربر تست", "1234567890", "تهران", "09121234567");
-  //   console.log("✅ Test customer inserted.");
-  // } catch (err) {
-  //   console.log(
-  //     "⚠️ Error inserting (maybe duplicate national ID):",
-  //     err.message
-  //   );
-  // }
-
-  // // Fetch all customers and print them
-  // const rows = db.prepare("SELECT * FROM customers").all();
-  // console.log("🧾 All customers:", rows);
 
   createWindow();
 
@@ -183,8 +162,20 @@ ipcMain.handle("customers:getLatest", () => {
 ipcMain.handle("customers:getById", (event, id) => {
   return getCustomerById(id);
 });
-
+// get by national ID
+ipcMain.handle("customers:getByNationalId", (event, nationalId) => {
+  return getCustomerByNationalId(nationalId);
+});
 // search for customers
 ipcMain.handle("customers:search", (event, criteria) => {
   return searchCustomers(criteria);
+});
+
+// create invoice
+ipcMain.handle("invoice:add", (event, data) => {
+  return createInvoice(data);
+});
+
+ipcMain.handle("invoice:getToday", () => {
+  return getTodayInvoices();
 });

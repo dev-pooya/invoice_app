@@ -27,3 +27,16 @@ export function getToday() {
 export function commaSeprate(number) {
   return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "٫");
 }
+export function generateId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+}
+
+export function seprateDateParts(dateStr) {
+  if (!/^\d{8}$/.test(dateStr)) return dateStr; // validate
+
+  const year = dateStr.slice(0, 4);
+  const month = dateStr.slice(4, 6);
+  const day = dateStr.slice(6, 8);
+
+  return `${year}/${month}/${day}`;
+}

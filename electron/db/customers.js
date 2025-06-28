@@ -72,6 +72,13 @@ function searchCustomers(criteria) {
 
   return []; // no filter provided
 }
+
+function getCustomerByNationalId(nationalId) {
+  return db
+    .prepare("SELECT * FROM customers WHERE national_id_number = ?")
+    .get(nationalId);
+}
+
 module.exports = {
   createCustomer,
   editCustomer,
@@ -80,4 +87,5 @@ module.exports = {
   getLatestCustomers,
   getCustomerById,
   searchCustomers,
+  getCustomerByNationalId,
 };

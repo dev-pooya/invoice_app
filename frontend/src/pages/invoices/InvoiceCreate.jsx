@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   InputOTP,
   InputOTPGroup,
@@ -41,8 +41,11 @@ import {
 } from "@/components/ui/table";
 import { useState } from "react";
 import { getToday } from "../../lib/utils";
-import { PlusCircle, Trash2 } from "lucide-react";
+import { ClipboardList, Database, PlusCircle, Trash2 } from "lucide-react";
 import { commaSeprate } from "../../lib/utils";
+import { generateId } from "../../lib/utils";
+import { useGlobalContext } from "../../context/GlobalContext";
+import EmptyData from "../../components/EmptyData";
 
 const initialItemForm = {
   title: "",
@@ -51,27 +54,84 @@ const initialItemForm = {
 };
 
 function InvoiceCreate() {
-  // states for form
-  const [national_id_number, setNational_id_number] = useState();
+  // states for item form
   const [itemForm, setItemForm] = useState(initialItemForm);
-  const [invoiceItems, setInvoiceItems] = useState([]);
-  const [date, setDate] = useState(getToday());
-  const [isManualDatePicking, setIsManualDatePicking] = useState(false);
-  const [customer, setCustomer] = useState(null);
-
+  const [errors, setErrors] = useState(null);
   // refs
   const firstInputRef = useRef(null);
+
+  // global states
+  const {
+    invoiceFormCustomer,
+    invoiceFormNationalId,
+    invoiceFormDate,
+    isManualDatePicking,
+    invoiceFormItems,
+    invoiceFormType,
+    invoiceFormBankNumber,
+    addItem,
+    removeItem,
+    findCustomer,
+    setInvoiceFormNationalId,
+    setInvoiceFormDate,
+    setIsManualDatePicking,
+    setInvoiceFormType,
+    setInvoiceFormBankNumber,
+    getInvoiceFormData,
+  } = useGlobalContext();
 
   // handle the submition of second form for adding the items to the invoice
   function handleSubmitItem(e) {
     e.preventDefault();
-    setInvoiceItems([...invoiceItems, itemForm]);
+
+    // validate the form
+    const errors = {};
+
+    // title: required
+    if (!itemForm.title.trim()) {
+      errors.title = " شرح کالا الزامی است";
+    }
+
+    //  qty: required and digits
+    if (!/^\d+(\.\d+)?$/.test(itemForm.qty.trim())) {
+      errors.qty = "تعداد را به عدد وارد کنید";
+    }
+    // fee: required
+    if (!/^\d+$/.test(itemForm.fee.trim())) {
+      errors.fee = "مقدار فی را به عدد وارد کنید";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setErrors(errors);
+      return;
+    }
+
+    // there is safe data
+    addItem(itemForm);
     // reset the form
     setItemForm(initialItemForm);
+    setErrors(null);
 
     // Focus on the first input
     firstInputRef.current?.focus();
   }
+
+  // Search the customer form event
+  async function handleSearchCustomer(e) {
+    e.preventDefault();
+
+    findCustomer();
+  }
+
+  // handle invoice submition
+  async function handleInvoiceSubmition(e) {
+    const formData = getInvoiceFormData();
+
+    console.log(formData);
+    const result = await window.electronAPI.addInvoice(formData);
+    console.log("result = ", result);
+  }
+  function handleInvoicePreview(e) {}
 
   return (
     <div className="p-5 bg-amber-50">
@@ -80,7 +140,10 @@ function InvoiceCreate() {
       </header>
       <Card>
         <CardContent>
-          <form className="flex justify-between">
+          <form
+            className="flex justify-between"
+            onSubmit={handleSearchCustomer}
+          >
             <header className="flex flex-col gap-6 ">
               <div className="flex gap-3 items-center">
                 <Label>کد ملی مشتری :</Label>
@@ -90,8 +153,8 @@ function InvoiceCreate() {
                   <InputOTP
                     maxLength={10}
                     pattern={REGEXP_ONLY_DIGITS}
-                    value={national_id_number}
-                    onChange={(value) => setNational_id_number(value)}
+                    value={invoiceFormNationalId}
+                    onChange={(value) => setInvoiceFormNationalId(value)}
                   >
                     <InputOTPGroup>
                       <InputOTPSlot index={0} />
@@ -107,7 +170,7 @@ function InvoiceCreate() {
                     </InputOTPGroup>
                   </InputOTP>
                 </div>
-                <Button> جستجو</Button>
+                <Button type="submit"> جستجو</Button>
               </div>
 
               <div className="flex gap-3 items-center">
@@ -118,8 +181,8 @@ function InvoiceCreate() {
                     maxLength={8}
                     pattern={REGEXP_ONLY_DIGITS}
                     disabled={!isManualDatePicking}
-                    value={date}
-                    onChange={(value) => setDate(value)}
+                    value={invoiceFormDate}
+                    onChange={(value) => setInvoiceFormDate(value)}
                   >
                     <InputOTPGroup>
                       <InputOTPSlot index={0} />
@@ -143,7 +206,7 @@ function InvoiceCreate() {
                   <Switch
                     checked={!isManualDatePicking}
                     onCheckedChange={(value) => {
-                      setDate(getToday());
+                      setInvoiceFormDate(getToday());
                       setIsManualDatePicking(!value);
                     }}
                   />
@@ -152,9 +215,20 @@ function InvoiceCreate() {
               </div>
               <div className="flex gap-3 items-center">
                 <Label className="whitespace-nowrap">شماره کارت | حساب :</Label>
-                <Input type="text" name="bank_number" />
+                <Input
+                  type="text"
+                  dir="ltr"
+                  name="bank_number"
+                  value={invoiceFormBankNumber}
+                  onChange={(e) => setInvoiceFormBankNumber(e.target.value)}
+                />
               </div>
-              <RadioGroup defaultValue="sell" dir="rtl" className="flex gap-3">
+              <RadioGroup
+                value={invoiceFormType}
+                onValueChange={(value) => setInvoiceFormType(value)}
+                dir="rtl"
+                className="flex gap-3"
+              >
                 <Label className="has-[[data-state=checked]]:border-ring has-[[data-state=checked]]:bg-input/20  rounded-md border p-3">
                   <RadioGroupItem value="buy" id="buy" />
                   <span>فاکتور خرید</span>
@@ -170,7 +244,7 @@ function InvoiceCreate() {
                 نام و نام خانوادگی :
               </h2>
               <p className="border border-r-0 border-primary/40 rounded-l-lg p-3">
-                amin
+                {invoiceFormCustomer ? invoiceFormCustomer.full_name : ""}
               </p>
 
               <h2 className="border border-primary/40 rounded-r-lg p-3">
@@ -178,7 +252,9 @@ function InvoiceCreate() {
                 کد ملی :
               </h2>
               <p className="border border-r-0 border-primary/40 rounded-l-lg p-3 tracking-wide ">
-                2020404070
+                {invoiceFormCustomer
+                  ? invoiceFormCustomer.national_id_number
+                  : ""}
               </p>
 
               <h2 className="border border-primary/40 rounded-r-lg p-3">
@@ -186,7 +262,7 @@ function InvoiceCreate() {
                 آدرس :
               </h2>
               <p className="border border-r-0 border-primary/40 rounded-l-lg p-3">
-                maku iran
+                {invoiceFormCustomer ? invoiceFormCustomer.address : ""}
               </p>
 
               <h2 className="border border-primary/40 rounded-r-lg p-3">
@@ -197,14 +273,14 @@ function InvoiceCreate() {
                 className="border border-r-0 border-primary/40 rounded-l-lg p-3 tracking-wide
 "
               >
-                09124343500
+                {invoiceFormCustomer ? invoiceFormCustomer.phone_number : ""}
               </p>
             </section>
           </form>
 
           <Separator className="my-10" />
           <form className="flex gap-3 mb-5 w-full" onSubmit={handleSubmitItem}>
-            <div className="grow">
+            <div className="min-w-[350px]">
               <Input
                 name="title"
                 type="text"
@@ -215,22 +291,30 @@ function InvoiceCreate() {
                   setItemForm({ ...itemForm, title: e.target.value })
                 }
               />
+              {errors?.title && (
+                <p className="text-red-500 text-sm mt-1 ">{errors.title}</p>
+              )}
             </div>
             <div className="max-w-[100px]">
               <Input
                 name="qty"
                 type="text"
+                dir="ltr"
                 placeholder="تعداد"
                 value={itemForm.qty}
                 onChange={(e) =>
                   setItemForm({ ...itemForm, qty: e.target.value })
                 }
               />
+              {errors?.qty && (
+                <p className="text-red-500 text-sm mt-1 ">{errors.qty}</p>
+              )}
             </div>
             <div>
               <Input
                 name="fee"
                 type="text"
+                dir="ltr"
                 placeholder="فی"
                 value={itemForm.fee}
                 onChange={(e) =>
@@ -240,6 +324,9 @@ function InvoiceCreate() {
               <p className="text-primary text-sm mt-2">
                 {commaSeprate(itemForm.fee)}
               </p>
+              {errors?.fee && (
+                <p className="text-red-500 text-sm mt-1 ">{errors.fee}</p>
+              )}
             </div>
             <Button type="submit">
               <PlusCircle />
@@ -256,37 +343,64 @@ function InvoiceCreate() {
                 <TableHead className="text-right  w-[80px]">حذف</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {invoiceItems
-                ? invoiceItems.map((item) => (
-                    <TableRow className="" key={item.title + item.qty}>
-                      <TableCell className="font-medium">
-                        {item.title}
-                      </TableCell>
-                      <TableCell className="font-medium">{item.qty}</TableCell>
-                      <TableCell className="font-medium">
-                        {commaSeprate(item.fee)}
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {commaSeprate(
-                          Math.floor(parseFloat(item.qty) * parseInt(item.fee))
-                        )}
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          className="size-8 text-secondary"
-                        >
-                          <Trash2 />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                : ""}
-            </TableBody>
+            {invoiceFormItems.length ? (
+              <TableBody>
+                {invoiceFormItems.map((item) => (
+                  <TableRow className="" key={item.id}>
+                    <TableCell className="font-medium">{item.title}</TableCell>
+                    <TableCell className="font-medium">{item.qty}</TableCell>
+                    <TableCell className="font-medium">
+                      {commaSeprate(item.fee)}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {commaSeprate(
+                        Math.floor(parseFloat(item.qty) * parseInt(item.fee))
+                      )}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="size-8 text-secondary"
+                        type="button"
+                        onClick={() => removeItem(item.id)}
+                      >
+                        <Trash2 />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            ) : (
+              <TableBody>
+                <TableRow>
+                  <TableCell colSpan={5}>
+                    <div className="flex justify-center">
+                      <EmptyData message="هیج کالایی افزوده نشده" />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            )}
           </Table>
         </CardContent>
+        <CardFooter className="gap-3">
+          <Button
+            className="grow"
+            type="button"
+            onClick={handleInvoiceSubmition}
+          >
+            صدور فاکتور
+          </Button>
+          <Button
+            className="grow"
+            variant="outline"
+            type="button"
+            onClick={handleInvoicePreview}
+          >
+            پیش نمایش فاکتور
+          </Button>
+        </CardFooter>
       </Card>
     </div>
   );

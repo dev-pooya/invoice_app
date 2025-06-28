@@ -92,7 +92,7 @@ function Customers() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {customers
+            {customers.length
               ? customers.map((customer) => (
                   <TableRow className="" key={customer.id}>
                     <TableCell className="font-medium">

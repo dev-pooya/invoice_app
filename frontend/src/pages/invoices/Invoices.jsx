@@ -13,15 +13,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
+import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { Eye, Scroll, Trash2, UserPen } from "lucide-react";
 import { commaSeprate } from "../../lib/utils";
 import { seprateDateParts } from "../../lib/utils";
+import EmptyData from "../../components/EmptyData";
+import { formatInvoiceNumberInput } from "../../lib/utils";
 
 function Invoices() {
   const [invoices, setInvoices] = useState([]);
   const [filterInput, setFilterInput] = useState(null);
 
-  console.log(invoices);
   useEffect(() => {
     window.electronAPI.getTodayInvoices().then(setInvoices);
   }, []);
@@ -40,18 +43,22 @@ function Invoices() {
     if (!filterInput) {
       return;
     }
-    if (
-      filterInput.name === "national_id_number" &&
-      !/^\d{10}$/.test(filterInput.value)
-    ) {
+    if (filterInput.name === "national_id_number" && !/^\d{10}$/.test(filterInput.value)) {
+      return;
+    }
+    if (filterInput.name === "number" && !/^\d{11}$/.test(filterInput.value)) {
       return;
     }
 
-    const result = await window.electronAPI.searchCustomers(filterInput);
-    if (result?.length) {
-      console.log(result);
-      setCustomers(result);
+    let result = [];
+
+    if (filterInput.name === "number") {
+      result = await window.electronAPI.getInvoiceByNumber(formatInvoiceNumberInput(filterInput.value));
+    } else {
+      result = await window.electronAPI.getInvoiceByNationalId(filterInput.value);
     }
+
+    setInvoices(result);
   }
 
   return (
@@ -68,16 +75,19 @@ function Invoices() {
       </header>
       <div className="flex gap-3 mt-5">
         <Input
-          placeholder="جستجو کد ملی"
-          name="national_id_number"
-          onChange={handleFilterInputChange}
-          disabled={filterInput?.name === "full_name"}
-        />
-        <Input
-          placeholder="جستجو نام و نام خانوادگی"
-          name="full_name"
+          dir="ltr"
+          placeholder="جستجو شماره فاکتور "
+          name="number"
           onChange={handleFilterInputChange}
           disabled={filterInput?.name === "national_id_number"}
+        />
+
+        <Input
+          dir="ltr"
+          placeholder="جستجو کد ملی مشتری"
+          name="national_id_number"
+          onChange={handleFilterInputChange}
+          disabled={filterInput?.name === "number"}
         />
         <Button type="button" onClick={handleSeachCustomers}>
           جستجو
@@ -85,7 +95,7 @@ function Invoices() {
       </div>
       <div className="rounded-md border mt-3 ">
         <Table dir="rtl">
-          <TableCaption> مشاهده فاکتور های امروز (۵۰)</TableCaption>
+          <TableCaption> مشاهده فاکتور های امروز </TableCaption>
           <TableHeader>
             <TableRow>
               <TableHead className="text-right">شماره فاکتور </TableHead>
@@ -98,46 +108,43 @@ function Invoices() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {invoices.length
-              ? invoices.map((invoice) => (
-                  <TableRow className="" key={invoice.id}>
-                    <TableCell className="font-medium">
-                      {invoice.number}
-                    </TableCell>
-                    <TableCell>{invoice.full_name}</TableCell>
-                    <TableCell>{invoice.national_id_number}</TableCell>
-                    <TableCell>{seprateDateParts(invoice.date)}</TableCell>
-                    <TableCell>{commaSeprate(invoice.total)}</TableCell>
-                    <TableCell>
-                      {invoice.type === "sell" ? (
-                        <span className="text-red-600"> فروش</span>
-                      ) : (
-                        <span className="text-green-600"> خرید</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right flex justify-center gap-2">
-                      <Button
-                        asChild
-                        variant="secondary"
-                        size="icon"
-                        className="size-8 text-yellow-600"
-                      >
-                        <Link to={`/customers/${invoice.id}`}>
-                          <Eye />
-                        </Link>
-                      </Button>
+            {invoices.length ? (
+              invoices.map((invoice) => (
+                <TableRow className="" key={invoice.id}>
+                  <TableCell className="font-medium">{invoice.number}</TableCell>
+                  <TableCell>{invoice.full_name}</TableCell>
+                  <TableCell>{invoice.national_id_number}</TableCell>
+                  <TableCell>{seprateDateParts(invoice.date)}</TableCell>
+                  <TableCell>{commaSeprate(invoice.total)}</TableCell>
+                  <TableCell>
+                    {invoice.type === "sell" ? (
+                      <span className="text-red-600"> فروش</span>
+                    ) : (
+                      <span className="text-green-600"> خرید</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right flex justify-center gap-2">
+                    <Button asChild variant="secondary" size="icon" className="size-8 text-yellow-600">
+                      <Link to={`/invoices/${invoice.id}`}>
+                        <Eye />
+                      </Link>
+                    </Button>
 
-                      <Button
-                        variant="secondary"
-                        size="icon"
-                        className="size-8 text-destructive"
-                      >
-                        <Trash2 />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              : ""}
+                    <Button variant="secondary" size="icon" className="size-8 text-destructive">
+                      <Trash2 />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={7}>
+                  <div className="flex justify-center">
+                    <EmptyData message="فاکتوری برای امروز وجود ندارد" />
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>

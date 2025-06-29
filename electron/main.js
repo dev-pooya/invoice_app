@@ -1,12 +1,5 @@
 // electron/main.js
-const {
-  app,
-  BrowserWindow,
-  ipcMain,
-  Menu,
-  dialog,
-  protocol,
-} = require("electron");
+const { app, BrowserWindow, ipcMain, Menu, dialog, protocol } = require("electron");
 const path = require("path");
 const fs = require("fs");
 
@@ -20,7 +13,13 @@ const {
   getCustomerByNationalId,
 } = require("./db/customers");
 
-const { createInvoice, getTodayInvoices } = require("./db/invoices");
+const {
+  createInvoice,
+  getTodayInvoices,
+  getInvoiceByNumber,
+  getInvoiceByNationalId,
+  getInvoiceById,
+} = require("./db/invoices");
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -43,9 +42,7 @@ function createWindow() {
 
 // solve the file view problem
 const protocolName = "secure-image";
-protocol.registerSchemesAsPrivileged([
-  { scheme: protocolName, privileges: { bypassCSP: true } },
-]);
+protocol.registerSchemesAsPrivileged([{ scheme: protocolName, privileges: { bypassCSP: true } }]);
 
 app.whenReady().then(() => {
   protocol.registerFileProtocol(protocolName, (request, callback) => {
@@ -104,10 +101,7 @@ ipcMain.handle("customers:edit", (event, data) => {
   // get the customer from db
   const oldCustomer = getCustomerById(data.id);
 
-  if (
-    oldCustomer.national_id_number !== data.national_id_number &&
-    isNationalIdDuplicate(data.national_id_number)
-  ) {
+  if (oldCustomer.national_id_number !== data.national_id_number && isNationalIdDuplicate(data.national_id_number)) {
     return { success: false, error: "کد ملی تکراری است" };
   }
 
@@ -115,10 +109,7 @@ ipcMain.handle("customers:edit", (event, data) => {
   let storedFilePath = oldCustomer.national_card_path || "";
   if (data.filePath) {
     // delete the prev image
-    if (
-      oldCustomer.national_card_path &&
-      fs.existsSync(oldCustomer.national_card_path)
-    ) {
+    if (oldCustomer.national_card_path && fs.existsSync(oldCustomer.national_card_path)) {
       fs.unlinkSync(oldCustomer.national_card_path);
     }
     // upload the file
@@ -176,6 +167,16 @@ ipcMain.handle("invoice:add", (event, data) => {
   return createInvoice(data);
 });
 
+// get today invoices
 ipcMain.handle("invoice:getToday", () => {
   return getTodayInvoices();
 });
+
+// get invoice by number
+ipcMain.handle("invoice:getByNumber", (event, number) => getInvoiceByNumber(number));
+// get invoice by national id
+ipcMain.handle("invoice:getByNationalId", (event, nationalId) => getInvoiceByNationalId(nationalId));
+
+ipcMain.handle("invoice:getById", (event, id) => getInvoiceById(id));
+
+// handle the print

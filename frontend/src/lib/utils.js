@@ -40,3 +40,18 @@ export function seprateDateParts(dateStr) {
 
   return `${year}/${month}/${day}`;
 }
+
+export function formatInvoiceNumberInput(rawInput) {
+  const cleaned = rawInput.replace(/\D/g, ""); // remove non-digits
+
+  if (cleaned.length !== 11) return null; // must be 8 + 3 digits
+
+  const datePart = cleaned.slice(0, 8); // "14040221"
+  const indexPart = cleaned.slice(8, 11); // "001"
+
+  return `${datePart}-${indexPart}`;
+}
+
+export function roundLastThreeToZero(number) {
+  return number - (number % 1000);
+}

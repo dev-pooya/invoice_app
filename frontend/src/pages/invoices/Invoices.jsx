@@ -20,6 +20,7 @@ import { commaSeprate } from "../../lib/utils";
 import { seprateDateParts } from "../../lib/utils";
 import EmptyData from "../../components/EmptyData";
 import { formatInvoiceNumberInput } from "../../lib/utils";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 function Invoices() {
   const [invoices, setInvoices] = useState([]);
@@ -59,6 +60,13 @@ function Invoices() {
     }
 
     setInvoices(result);
+  }
+
+  async function deleteInvoice(id) {
+    const result = await window.electronAPI.deleteInvoice(id);
+    if (result) {
+      setInvoices((prevs) => prevs.filter((invoice) => invoice.id !== result));
+    }
   }
 
   return (
@@ -130,9 +138,16 @@ function Invoices() {
                       </Link>
                     </Button>
 
-                    <Button variant="secondary" size="icon" className="size-8 text-destructive">
-                      <Trash2 />
-                    </Button>
+                    <ConfirmDialog
+                      title="آیا از حذف فاکتور مطمئن هستید ؟"
+                      message="در صورت حذف فاکتور امکان بازیابی وجود ندارد!"
+                      action={() => deleteInvoice(invoice.id)}
+                      opener={
+                        <Button variant="secondary" size="icon" className="size-8 text-destructive">
+                          <Trash2 />
+                        </Button>
+                      }
+                    />
                   </TableCell>
                 </TableRow>
               ))

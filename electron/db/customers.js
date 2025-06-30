@@ -36,37 +36,29 @@ function editCustomer(data) {
 }
 
 function isNationalIdDuplicate(nationalId) {
-  const row = db
-    .prepare("SELECT 1 FROM customers WHERE national_id_number = ?")
-    .get(nationalId);
+  const row = db.prepare("SELECT 1 FROM customers WHERE national_id_number = ?").get(nationalId);
   return !!row;
 }
 
 function getAllCustomers() {
   return db.prepare("SELECT * FROM customers ORDER BY created_at DESC").all();
 }
-function getCustomerById(id) {
-  return db.prepare("SELECT * FROM customers WHERE id = ?").get(id);
+function getCustomerById(id, columns = "*") {
+  return db.prepare(`SELECT ${columns} FROM customers WHERE id = ?`).get(id);
 }
 function getLatestCustomers(limit = 50) {
-  return db
-    .prepare("SELECT * FROM customers ORDER BY created_at DESC LIMIT ?")
-    .all(limit);
+  return db.prepare("SELECT * FROM customers ORDER BY created_at DESC LIMIT ?").all(limit);
 }
 
 // search customers
 function searchCustomers(criteria) {
   if (criteria.name === "national_id_number") {
-    return db
-      .prepare("SELECT * FROM customers WHERE national_id_number = ?")
-      .all(criteria.value);
+    return db.prepare("SELECT * FROM customers WHERE national_id_number = ?").all(criteria.value);
   }
 
   if (criteria.name === "full_name") {
     return db
-      .prepare(
-        "SELECT * FROM customers WHERE full_name LIKE ? ORDER BY created_at DESC"
-      )
+      .prepare("SELECT * FROM customers WHERE full_name LIKE ? ORDER BY created_at DESC")
       .all(`${criteria.value}%`);
   }
 
@@ -74,10 +66,14 @@ function searchCustomers(criteria) {
 }
 
 function getCustomerByNationalId(nationalId) {
-  return db
-    .prepare("SELECT * FROM customers WHERE national_id_number = ?")
-    .get(nationalId);
+  return db.prepare("SELECT * FROM customers WHERE national_id_number = ?").get(nationalId);
 }
+
+// delete customer by id
+const deleteCustomer = db.transaction((id) => {
+  const deleteStmt = db.prepare("DELETE FROM customers WHERE id = ?");
+  return deleteStmt.run(id);
+});
 
 module.exports = {
   createCustomer,
@@ -88,4 +84,5 @@ module.exports = {
   getCustomerById,
   searchCustomers,
   getCustomerByNationalId,
+  deleteCustomer,
 };

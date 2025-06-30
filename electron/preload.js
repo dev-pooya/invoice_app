@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getCustomerByNationalId: (nationalId) => ipcRenderer.invoke("customers:getByNationalId", nationalId),
   searchCustomers: (criteria) => ipcRenderer.invoke("customers:search", criteria),
   addCustomer: (data) => ipcRenderer.invoke("customers:add", data),
+  deleteCustomer: (id) => ipcRenderer.invoke("customers:delete", id),
   editCustomer: (data) => ipcRenderer.invoke("customers:edit", data),
   pickFile: () => ipcRenderer.invoke("customers:pickFile"),
   addInvoice: (data) => ipcRenderer.invoke("invoice:add", data),
@@ -14,5 +15,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getInvoiceByNumber: (number) => ipcRenderer.invoke("invoice:getByNumber", number),
   getInvoiceByNationalId: (nationalId) => ipcRenderer.invoke("invoice:getByNationalId", nationalId),
   getInvoiceById: (id) => ipcRenderer.invoke("invoice:getById", id),
+  paginateInvoiceByCustomerId: (id, currentPage) => ipcRenderer.invoke("invoice:paginateByCustomerId", id, currentPage),
+  deleteInvoice: (id) => ipcRenderer.invoke("invoice:delete", id),
   printInvoice: (options) => ipcRenderer.invoke("invoice:print", options),
 });

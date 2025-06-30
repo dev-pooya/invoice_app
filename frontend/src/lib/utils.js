@@ -55,3 +55,15 @@ export function formatInvoiceNumberInput(rawInput) {
 export function roundLastThreeToZero(number) {
   return number - (number % 1000);
 }
+
+export function formatRegisterDate(date) {
+  const d = new Date(date);
+  return d.toLocaleDateString("fa-IR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    weekday: "short",
+  });
+}

@@ -11,6 +11,7 @@ const {
   searchCustomers,
   getCustomerById,
   getCustomerByNationalId,
+  deleteCustomer,
 } = require("./db/customers");
 
 const {
@@ -19,6 +20,8 @@ const {
   getInvoiceByNumber,
   getInvoiceByNationalId,
   getInvoiceById,
+  deleteInvoice,
+  paginateInvoiceByCustomerId,
 } = require("./db/invoices");
 
 let win;
@@ -150,6 +153,29 @@ ipcMain.handle("customers:pickFile", async (event) => {
   return filePaths[0];
 });
 
+// delete customer
+ipcMain.handle("customers:delete", (event, id) => {
+  // get image path if exist
+  const customer = getCustomerById(id, "national_card_path");
+
+  const imagePath = customer.national_card_path;
+  try {
+    const result = deleteCustomer(id);
+    console.log(`Customer ${id} deleted from database.`);
+
+    // 3. Delete file from disk
+    if (imagePath && fs.existsSync(imagePath)) {
+      fs.unlinkSync(imagePath);
+
+      return result;
+    } else {
+      console.log("Image file does not exist or no image path was set.");
+    }
+  } catch (err) {
+    console.error("Error deleting customer or image:", err);
+  }
+});
+
 // get customers
 ipcMain.handle("customers:getLatest", () => {
   return getLatestCustomers();
@@ -178,12 +204,19 @@ ipcMain.handle("invoice:getToday", () => {
   return getTodayInvoices();
 });
 
+// paginate invoice by customer id
+ipcMain.handle("invoice:paginateByCustomerId", (event, id, currentPage) =>
+  paginateInvoiceByCustomerId(id, currentPage)
+);
+
 // get invoice by number
 ipcMain.handle("invoice:getByNumber", (event, number) => getInvoiceByNumber(number));
 // get invoice by national id
 ipcMain.handle("invoice:getByNationalId", (event, nationalId) => getInvoiceByNationalId(nationalId));
 
 ipcMain.handle("invoice:getById", (event, id) => getInvoiceById(id));
+// handle delete
+ipcMain.handle("invoice:delete", (event, id) => (deleteInvoice(id)?.changes > 0 ? id : null));
 
 // handle the print
 ipcMain.handle("invoice:print", async (event, options = {}) => {

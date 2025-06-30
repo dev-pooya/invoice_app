@@ -9,7 +9,6 @@ import { roundLastThreeToZero } from "../../lib/utils";
 
 function InvoiceShow() {
   const invoice = useLoaderData();
-  console.log(invoice);
 
   // handle invoice print
   function handlePrintInvoice(e) {
@@ -21,7 +20,7 @@ function InvoiceShow() {
   }
 
   return (
-    <div className="p-5 ">
+    <div className="p-5 bg-white text-black dark:bg-white dark:text-black">
       <aside className="no-print flex items-center gap-3">
         <h1 className="text-2xl font-semibold ml-auto">اطلاعات فاکتور </h1>
         <Button disabled type="button" variant="outline" className="w-xs cursor-pointer">
@@ -33,7 +32,7 @@ function InvoiceShow() {
       </aside>
 
       <Separator className="my-5" />
-      <div id="invoice" className="font-nastalig">
+      <div id="invoice" className="font-nastalig ">
         <header className="grid grid-cols-6 items-center mb-2 px-6 pt-2">
           <div className="logo ">
             <img src="/logo.png" alt="logo" className="invert w-3/5" />

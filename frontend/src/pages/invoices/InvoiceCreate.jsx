@@ -1,10 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-  InputOTPSeparator,
-} from "@/components/ui/input-otp";
+import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from "@/components/ui/input-otp";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import {
   Card,
@@ -22,13 +17,7 @@ import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -120,35 +109,35 @@ function InvoiceCreate() {
   async function handleSearchCustomer(e) {
     e.preventDefault();
 
-    findCustomer();
+    if (!(await findCustomer())) {
+      setErrors((prevs) => ({ ...prevs, national_id_number: "مشتری با کد ملی وارد شده یافت نشد" }));
+    }
   }
 
   // handle invoice submition
   async function handleInvoiceSubmition(e) {
     const formData = getInvoiceFormData();
 
-    console.log(formData);
     const result = await window.electronAPI.addInvoice(formData);
     console.log("result = ", result);
   }
-  function handleInvoicePreview(e) {}
+  function handleInvoicePreview(e) {
+    // TODO
+  }
 
   return (
-    <div className="p-5 bg-amber-50">
+    <div className="p-5 ">
       <header>
         <h1 className="text-2xl font-semibold mb-5">فرم صدور فاکتور جدید</h1>
       </header>
       <Card>
         <CardContent>
-          <form
-            className="flex justify-between"
-            onSubmit={handleSearchCustomer}
-          >
+          <form className="flex justify-between gap-6" onSubmit={handleSearchCustomer}>
             <header className="flex flex-col gap-6 ">
               <div className="flex gap-3 items-center">
                 <Label>کد ملی مشتری :</Label>
 
-                <div dir="ltr">
+                <div dir="ltr" className="relative">
                   {" "}
                   <InputOTP
                     maxLength={10}
@@ -169,6 +158,11 @@ function InvoiceCreate() {
                       <InputOTPSlot index={9} />
                     </InputOTPGroup>
                   </InputOTP>
+                  {errors?.national_id_number && (
+                    <p className="text-red-500 text-sm mt-1 text-right absolute right-0 -top-6">
+                      {errors.national_id_number}
+                    </p>
+                  )}
                 </div>
                 <Button type="submit"> جستجو</Button>
               </div>
@@ -240,35 +234,22 @@ function InvoiceCreate() {
               </RadioGroup>
             </header>
             <section className="grid grid-cols-2  gap-y-2 ">
-              <h2 className="border border-primary/40 rounded-r-lg p-3">
-                نام و نام خانوادگی :
-              </h2>
+              <h2 className="border border-primary/40 rounded-r-lg p-3">نام و نام خانوادگی :</h2>
               <p className="border border-r-0 border-primary/40 rounded-l-lg p-3">
                 {invoiceFormCustomer ? invoiceFormCustomer.full_name : ""}
               </p>
 
-              <h2 className="border border-primary/40 rounded-r-lg p-3">
-                {" "}
-                کد ملی :
-              </h2>
+              <h2 className="border border-primary/40 rounded-r-lg p-3"> کد ملی :</h2>
               <p className="border border-r-0 border-primary/40 rounded-l-lg p-3 tracking-wide ">
-                {invoiceFormCustomer
-                  ? invoiceFormCustomer.national_id_number
-                  : ""}
+                {invoiceFormCustomer ? invoiceFormCustomer.national_id_number : ""}
               </p>
 
-              <h2 className="border border-primary/40 rounded-r-lg p-3">
-                {" "}
-                آدرس :
-              </h2>
+              <h2 className="border border-primary/40 rounded-r-lg p-3"> آدرس :</h2>
               <p className="border border-r-0 border-primary/40 rounded-l-lg p-3">
                 {invoiceFormCustomer ? invoiceFormCustomer.address : ""}
               </p>
 
-              <h2 className="border border-primary/40 rounded-r-lg p-3">
-                {" "}
-                شماره تماس :
-              </h2>
+              <h2 className="border border-primary/40 rounded-r-lg p-3"> شماره تماس :</h2>
               <p
                 className="border border-r-0 border-primary/40 rounded-l-lg p-3 tracking-wide
 "
@@ -287,13 +268,9 @@ function InvoiceCreate() {
                 placeholder="شرح کالا"
                 ref={firstInputRef}
                 value={itemForm.title}
-                onChange={(e) =>
-                  setItemForm({ ...itemForm, title: e.target.value })
-                }
+                onChange={(e) => setItemForm({ ...itemForm, title: e.target.value })}
               />
-              {errors?.title && (
-                <p className="text-red-500 text-sm mt-1 ">{errors.title}</p>
-              )}
+              {errors?.title && <p className="text-red-500 text-sm mt-1 ">{errors.title}</p>}
             </div>
             <div className="max-w-[100px]">
               <Input
@@ -302,13 +279,9 @@ function InvoiceCreate() {
                 dir="ltr"
                 placeholder="تعداد"
                 value={itemForm.qty}
-                onChange={(e) =>
-                  setItemForm({ ...itemForm, qty: e.target.value })
-                }
+                onChange={(e) => setItemForm({ ...itemForm, qty: e.target.value })}
               />
-              {errors?.qty && (
-                <p className="text-red-500 text-sm mt-1 ">{errors.qty}</p>
-              )}
+              {errors?.qty && <p className="text-red-500 text-sm mt-1 ">{errors.qty}</p>}
             </div>
             <div>
               <Input
@@ -317,16 +290,10 @@ function InvoiceCreate() {
                 dir="ltr"
                 placeholder="فی"
                 value={itemForm.fee}
-                onChange={(e) =>
-                  setItemForm({ ...itemForm, fee: e.target.value })
-                }
+                onChange={(e) => setItemForm({ ...itemForm, fee: e.target.value })}
               />
-              <p className="text-primary text-sm mt-2">
-                {commaSeprate(itemForm.fee)}
-              </p>
-              {errors?.fee && (
-                <p className="text-red-500 text-sm mt-1 ">{errors.fee}</p>
-              )}
+              <p className="text-primary text-sm mt-2">{commaSeprate(itemForm.fee)}</p>
+              {errors?.fee && <p className="text-red-500 text-sm mt-1 ">{errors.fee}</p>}
             </div>
             <Button type="submit">
               <PlusCircle />
@@ -349,13 +316,9 @@ function InvoiceCreate() {
                   <TableRow className="" key={item.id}>
                     <TableCell className="font-medium">{item.title}</TableCell>
                     <TableCell className="font-medium">{item.qty}</TableCell>
+                    <TableCell className="font-medium">{commaSeprate(item.fee)}</TableCell>
                     <TableCell className="font-medium">
-                      {commaSeprate(item.fee)}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {commaSeprate(
-                        Math.floor(parseFloat(item.qty) * parseInt(item.fee))
-                      )}
+                      {commaSeprate(Math.floor(parseFloat(item.qty) * parseInt(item.fee)))}
                     </TableCell>
                     <TableCell className="font-medium">
                       <Button
@@ -385,19 +348,10 @@ function InvoiceCreate() {
           </Table>
         </CardContent>
         <CardFooter className="gap-3">
-          <Button
-            className="grow"
-            type="button"
-            onClick={handleInvoiceSubmition}
-          >
+          <Button className="grow" type="button" onClick={handleInvoiceSubmition}>
             صدور فاکتور
           </Button>
-          <Button
-            className="grow"
-            variant="outline"
-            type="button"
-            onClick={handleInvoicePreview}
-          >
+          <Button className="grow" variant="outline" type="button" onClick={handleInvoicePreview}>
             پیش نمایش فاکتور
           </Button>
         </CardFooter>

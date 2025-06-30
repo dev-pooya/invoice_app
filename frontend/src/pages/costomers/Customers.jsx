@@ -14,6 +14,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Eye, Scroll, Trash2, UserPen } from "lucide-react";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import EmptyData from "@/components/EmptyData";
 
 function Customers() {
   const [customers, setCustomers] = useState([]);
@@ -37,10 +39,7 @@ function Customers() {
     if (!filterInput) {
       return;
     }
-    if (
-      filterInput.name === "national_id_number" &&
-      !/^\d{10}$/.test(filterInput.value)
-    ) {
+    if (filterInput.name === "national_id_number" && !/^\d{10}$/.test(filterInput.value)) {
       return;
     }
 
@@ -48,6 +47,15 @@ function Customers() {
     if (result?.length) {
       console.log(result);
       setCustomers(result);
+    }
+  }
+
+  // delete customer
+  async function deleteCustomer(id) {
+    const result = await window.electronAPI.deleteCustomer(id);
+
+    if (result.changes > 0) {
+      setCustomers((prevs) => prevs.filter((customer) => customer.id !== id));
     }
   }
 
@@ -92,53 +100,48 @@ function Customers() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {customers.length
-              ? customers.map((customer) => (
-                  <TableRow className="" key={customer.id}>
-                    <TableCell className="font-medium">
-                      {customer.national_id_number}
-                    </TableCell>
-                    <TableCell>{customer.full_name}</TableCell>
-                    <TableCell>{customer.phone_number}</TableCell>
-                    <TableCell className="text-right flex justify-center gap-2">
-                      <Button
-                        asChild
-                        variant="secondary"
-                        size="icon"
-                        className="size-8 text-blue-600"
-                      >
-                        <Link to={`/customers/edit/${customer.id}`}>
-                          <UserPen />
-                        </Link>
-                      </Button>
-                      <Button
-                        asChild
-                        variant="secondary"
-                        size="icon"
-                        className="size-8 text-yellow-600"
-                      >
-                        <Link to={`/customers/${customer.id}`}>
-                          <Eye />
-                        </Link>
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="icon"
-                        className="size-8 text-teal-500"
-                      >
-                        <Scroll />
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="icon"
-                        className="size-8 text-destructive"
-                      >
-                        <Trash2 />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              : ""}
+            {customers.length ? (
+              customers.map((customer) => (
+                <TableRow className="" key={customer.id}>
+                  <TableCell className="font-medium">{customer.national_id_number}</TableCell>
+                  <TableCell>{customer.full_name}</TableCell>
+                  <TableCell>{customer.phone_number}</TableCell>
+                  <TableCell className="text-right flex justify-center gap-2">
+                    <Button asChild variant="secondary" size="icon" className="size-8 text-blue-600">
+                      <Link to={`/customers/edit/${customer.id}`}>
+                        <UserPen />
+                      </Link>
+                    </Button>
+                    <Button asChild variant="secondary" size="icon" className="size-8 text-yellow-600">
+                      <Link to={`/customers/${customer.id}`}>
+                        <Eye />
+                      </Link>
+                    </Button>
+                    <Button variant="secondary" size="icon" className="size-8 text-teal-500">
+                      <Scroll />
+                    </Button>
+                    <ConfirmDialog
+                      title="آیا از حذف مشتری و فاکتور ها مطمئن هستید ؟"
+                      message="با حذف مشتری تمام اطلاعات و فاکتور های مشتری حذف خواهد شد."
+                      action={() => deleteCustomer(customer.id)}
+                      opener={
+                        <Button variant="secondary" size="icon" className="size-8 text-destructive">
+                          <Trash2 />
+                        </Button>
+                      }
+                    />
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={7}>
+                  <div className="flex justify-center">
+                    <EmptyData message="مشتری برای نمایش وجود ندارد." />
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>

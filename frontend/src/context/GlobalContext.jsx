@@ -22,19 +22,16 @@ export const GlobalProvider = ({ children }) => {
 
   // remove the item
   function removeItem(id) {
-    setInvoiceFormItems((prevItems) =>
-      prevItems.filter((item) => item.id !== id)
-    );
+    setInvoiceFormItems((prevItems) => prevItems.filter((item) => item.id !== id));
   }
 
   // search for the customer in the form and set it
 
   async function findCustomer() {
-    const result = await window.electronAPI.getCustomerByNationalId(
-      invoiceFormNationalId
-    );
+    const result = await window.electronAPI.getCustomerByNationalId(invoiceFormNationalId);
     setInvoiceFormCustomer(result);
-    // TODO add error if customer didnt find
+    console.log(result);
+    return Boolean(result);
   }
 
   // get full invoice formData

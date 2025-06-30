@@ -66,6 +66,7 @@ function getTodayInvoices() {
     JOIN customers ON customers.id = invoices.customer_id
     WHERE DATE(invoices.created_at) = DATE('now', 'localtime')
     ORDER BY invoices.created_at DESC
+    LIMIT 20
   `);
 
   return stmt.all(); // returns an array of invoice rows
@@ -126,10 +127,45 @@ function getInvoiceById(id) {
   return { ...invoice, items };
 }
 
+// delete invoice by id
+function deleteInvoice(id) {
+  const stmt = db.prepare("DELETE FROM invoices WHERE id = ?");
+  const result = stmt.run(id);
+
+  return result;
+}
+
+function paginateInvoiceByCustomerId(id, currentPage = 1) {
+  const limit = 20;
+  const offset = (currentPage - 1) * limit;
+
+  const stmt = db.prepare(`
+    SELECT * FROM invoices
+    WHERE customer_id = ?
+    ORDER BY date DESC
+    LIMIT ? OFFSET ?
+  `);
+
+  const invoices = stmt.all(id, limit, offset);
+
+  const countStmt = db.prepare(`
+    SELECT COUNT(*) AS total FROM invoices WHERE customer_id = ?
+  `);
+  const { total } = countStmt.get(id);
+  return {
+    invoices,
+    currentPage,
+    totalPages: Math.ceil(total / limit),
+    totalRecords: total,
+  };
+}
+
 module.exports = {
   createInvoice,
   getTodayInvoices,
   getInvoiceByNumber,
   getInvoiceByNationalId,
   getInvoiceById,
+  deleteInvoice,
+  paginateInvoiceByCustomerId,
 };

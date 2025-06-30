@@ -6,7 +6,8 @@
   "scripts": {
     "electron": "electron electron/main.js",
     "build": "npm run build --prefix frontend",
-    "dev": "electronmon ."
+    "dev": "electronmon .",
+    "start": "electron ."
   },
   "keywords": [],
   "author": "dev-pooya",

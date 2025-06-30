@@ -1,26 +1,18 @@
 import React from "react";
 import { NavLink } from "react-router";
-import {
-  ClipboardList,
-  ClipboardPen,
-  DatabaseBackup,
-  UserRoundPlus,
-  Users,
-} from "lucide-react";
+import { ClipboardList, ClipboardPen, DatabaseBackup, UserRoundPlus, Users } from "lucide-react";
 import Logo from "./Logo";
 
 function Sidebar() {
   return (
-    <aside className=" bg-slate-900 text-white  min-h-[100vh]">
+    <aside className=" bg-slate-900 text-white  min-h-[100vh] no-print">
       <Logo />
       <ul className="flex flex-col gap-3 ">
         <li className="flex items-center">
           <NavLink
             to="/customers"
             className={({ isActive }) =>
-              isActive
-                ? "bg-slate-600 p-3 w-full flex items-center gap-3"
-                : "p-3 w-full flex items-center gap-3"
+              isActive ? "bg-slate-600 p-3 w-full flex items-center gap-3" : "p-3 w-full flex items-center gap-3"
             }
             end
           >
@@ -32,9 +24,7 @@ function Sidebar() {
           <NavLink
             to="/customers/create"
             className={({ isActive }) =>
-              isActive
-                ? "bg-slate-600 p-3 w-full flex items-center gap-3"
-                : "p-3 w-full flex items-center gap-3"
+              isActive ? "bg-slate-600 p-3 w-full flex items-center gap-3" : "p-3 w-full flex items-center gap-3"
             }
             end
           >
@@ -46,9 +36,7 @@ function Sidebar() {
           <NavLink
             to="/invoices"
             className={({ isActive }) =>
-              isActive
-                ? "bg-slate-600 p-3 w-full flex items-center gap-3"
-                : "p-3 w-full flex items-center gap-3"
+              isActive ? "bg-slate-600 p-3 w-full flex items-center gap-3" : "p-3 w-full flex items-center gap-3"
             }
             end
           >
@@ -61,9 +49,7 @@ function Sidebar() {
           <NavLink
             to="/invoices/create"
             className={({ isActive }) =>
-              isActive
-                ? "bg-slate-600 p-3 w-full flex items-center gap-3"
-                : "p-3 w-full flex items-center gap-3"
+              isActive ? "bg-slate-600 p-3 w-full flex items-center gap-3" : "p-3 w-full flex items-center gap-3"
             }
             end
           >
@@ -75,9 +61,7 @@ function Sidebar() {
           <NavLink
             to="/backup"
             className={({ isActive }) =>
-              isActive
-                ? "bg-slate-600 p-3 w-full flex items-center gap-3"
-                : "p-3 w-full flex items-center gap-3"
+              isActive ? "bg-slate-600 p-3 w-full flex items-center gap-3" : "p-3 w-full flex items-center gap-3"
             }
             end
           >

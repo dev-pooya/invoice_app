@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, createMemoryRouter } from "react-router";
 
 import Test from "./pages/Test";
 import Layout from "./Layout";
@@ -19,7 +19,7 @@ async function getInvoice(id) {
   return result;
 }
 
-const router = createBrowserRouter([
+const router = createMemoryRouter([
   {
     Component: Layout,
     children: [

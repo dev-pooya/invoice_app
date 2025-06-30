@@ -125,6 +125,9 @@
 }
 
 @media print {
+  :root {
+    font-size: 11pt;
+  }
   body {
     margin: 0;
     padding: 0;
@@ -133,8 +136,8 @@
   }
 
   @page {
-    size: A5 portrait;
-    margin: 10mm;
+    size: A5 landscape;
+    margin: 5mm;
   }
 
   .no-print {

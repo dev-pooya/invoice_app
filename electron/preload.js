@@ -14,4 +14,5 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getInvoiceByNumber: (number) => ipcRenderer.invoke("invoice:getByNumber", number),
   getInvoiceByNationalId: (nationalId) => ipcRenderer.invoke("invoice:getByNationalId", nationalId),
   getInvoiceById: (id) => ipcRenderer.invoke("invoice:getById", id),
+  printInvoice: (options) => ipcRenderer.invoke("invoice:print", options),
 });

@@ -21,8 +21,9 @@ const {
   getInvoiceById,
 } = require("./db/invoices");
 
+let win;
 function createWindow() {
-  const win = new BrowserWindow({
+  win = new BrowserWindow({
     width: 1200,
     height: 700,
     // titleBarStyle: "hidden", // Optional, good for macOS
@@ -37,6 +38,11 @@ function createWindow() {
 
   // Load dev server in dev mode
   win.loadURL("http://localhost:5173");
+
+  //for production mode
+
+  // win.loadFile(path.join(__dirname, "../frontend/dist/index.html"));
+
   win.webContents.openDevTools(); // ← This opens DevTools automatically
 }
 
@@ -180,3 +186,9 @@ ipcMain.handle("invoice:getByNationalId", (event, nationalId) => getInvoiceByNat
 ipcMain.handle("invoice:getById", (event, id) => getInvoiceById(id));
 
 // handle the print
+ipcMain.handle("invoice:print", async (event, options = {}) => {
+  win.webContents.print(options, (success, errorType) => {
+    if (!success) console.log(errorType);
+    if (success) console.log("printing...");
+  });
+});

@@ -12,6 +12,7 @@
     "build": "npm run build:react && npm run build:electron"
   },
   "build": {
+    "publish": null,
     "appId": "com.namdar.invoiceapp",
     "productName": "Namdar Invoice",
     "directories": {

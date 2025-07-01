@@ -29,7 +29,7 @@ function createWindow() {
   win = new BrowserWindow({
     width: 1200,
     height: 700,
-    // titleBarStyle: "hidden", // Optional, good for macOS
+    titleBarStyle: "hidden", // Optional, good for macOS
     minWidth: 1200,
     minHeight: 600,
     icon: path.join(__dirname, "assets", "icon.ico"), // Make sure the path is correct
@@ -41,13 +41,12 @@ function createWindow() {
   });
 
   // Load dev server in dev mode
-  win.loadURL("http://localhost:5173");
+  // win.loadURL("http://localhost:5173");
 
   //for production mode
+  win.loadFile(path.join(__dirname, "../frontend/dist/index.html"));
 
-  // win.loadFile(path.join(__dirname, "../frontend/dist/index.html"));
-
-  win.webContents.openDevTools(); // ← This opens DevTools automatically
+  // win.webContents.openDevTools(); // ← This opens DevTools automatically
 }
 
 // solve the file view problem

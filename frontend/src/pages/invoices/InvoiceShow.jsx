@@ -1,4 +1,5 @@
 import React from "react";
+import logoImage from "../../assets/logo.png";
 import { useLoaderData } from "react-router";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -49,7 +50,7 @@ function InvoiceShow() {
       <div id="invoice" className="font-nastalig ">
         <header className="grid grid-cols-6 items-center mb-2 px-6 pt-2">
           <div className="logo ">
-            <img src="/logo.png" alt="logo" className="invert w-3/5" />
+            <img src={logoImage} alt="logo" className="invert w-3/5" />
           </div>
           <div className="col-span-4">
             <h2 className="text-center font-semibold text-3xl">سکه نامدار</h2>

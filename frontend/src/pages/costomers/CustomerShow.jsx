@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import noAvatar from "../../assets/no-image.png";
 import {
   Card,
   CardAction,
@@ -87,7 +88,7 @@ function CustomerShow() {
           {customer.national_card_path ? (
             <img src={`secure-image://${customer.national_card_path}`} className=" max-h-64" />
           ) : (
-            <img src="/no-image.png" className="invert rounded-xl" />
+            <img src={noAvatar} className="invert rounded-xl" />
           )}
         </CardContent>
       </Card>

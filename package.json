@@ -1,19 +1,39 @@
 {
-  "name": "invoice_app",
+  "name": "namdar_invoice",
   "version": "1.0.0",
   "description": "",
   "main": "electron/main.js",
   "scripts": {
     "electron": "electron electron/main.js",
-    "build": "npm run build --prefix frontend",
     "dev": "electronmon .",
-    "start": "electron ."
+    "start": "electron .",
+    "build:react": "cd frontend && npm install && npm run build",
+    "build:electron": "npx electron-builder --win --x64",
+    "build": "npm run build:react && npm run build:electron"
   },
   "build": {
-    "appId": "com.yourcompany.invoiceapp",
-    "productName": "InvoiceApp",
+    "appId": "com.namdar.invoiceapp",
+    "productName": "Namdar Invoice",
+    "directories": {
+      "buildResources": "assets"
+    },
+    "files": [
+      "electron/**/*",
+      "frontend/dist/**/*",
+      "package.json",
+      "node_modules/**/*"
+    ],
     "win": {
-      "icon": "electron/assets/icon.ico"
+      "icon": "electron/assets/icon.ico",
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Namdar Invoice"
     }
   },
   "keywords": [],
@@ -24,6 +44,7 @@
   },
   "devDependencies": {
     "electron": "36.5.0",
+    "electron-builder": "^26.0.12",
     "electron-rebuild": "^3.2.9",
     "electron-reload": "^2.0.0-alpha.1",
     "electronmon": "^2.0.3"

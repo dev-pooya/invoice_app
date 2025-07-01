@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,42 +21,63 @@ import { seprateDateParts } from "../../lib/utils";
 import EmptyData from "../../components/EmptyData";
 import { formatInvoiceNumberInput } from "../../lib/utils";
 import ConfirmDialog from "../../components/ConfirmDialog";
+import { Skeleton } from "@/components/ui/skeleton";
+
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 function Invoices() {
   const [invoices, setInvoices] = useState([]);
   const [filterInput, setFilterInput] = useState(null);
+  const [pendding, setPendding] = useState(true);
+
+  // input refs
+  const numberRef = useRef(null);
+  const nationalIdNumberRef = useRef(null);
 
   useEffect(() => {
-    window.electronAPI.getTodayInvoices().then(setInvoices);
+    window.electronAPI.getTodayInvoices().then((res) => {
+      setPendding(false);
+      return setInvoices(res);
+    });
   }, []);
 
   // handle filter input change
-  function handleFilterInputChange(e) {
-    if (!e.target.value.length) {
-      setFilterInput(null);
-    } else {
-      setFilterInput({ name: e.target.name, value: e.target.value.trim() });
-    }
-  }
+  // function handleFilterInputChange(e) {
+  //   if (!e.target.value.length) {
+  //     setFilterInput(null);
+  //   } else {
+  //     setFilterInput({ name: e.target.name, value: e.target.value.trim() });
+  //   }
+  // }
 
-  async function handleSeachCustomers() {
-    // TODO validate here
-    if (!filterInput) {
-      return;
-    }
-    if (filterInput.name === "national_id_number" && !/^\d{10}$/.test(filterInput.value)) {
-      return;
-    }
-    if (filterInput.name === "number" && !/^\d{11}$/.test(filterInput.value)) {
-      return;
-    }
-
+  async function handleSearchInvoice() {
+    const searchQuery = {};
     let result = [];
+    // get the values and validate them
+    const national_id_number = nationalIdNumberRef.current.value.trim();
+    const number = numberRef.current.value.trim();
 
-    if (filterInput.name === "number") {
-      result = await window.electronAPI.getInvoiceByNumber(formatInvoiceNumberInput(filterInput.value));
+    // set the pendding state
+    setPendding(true);
+
+    if (national_id_number.length) {
+      searchQuery.name = "national_id_number";
+      searchQuery.value = national_id_number;
+    }
+    if (number.length) {
+      searchQuery.name = "number";
+      searchQuery.value = number;
+    }
+
+    if (searchQuery.name === "number") {
+      result = await window.electronAPI.getInvoiceByNumber(formatInvoiceNumberInput(number));
+      setPendding(false);
+    } else if (searchQuery.name === "national_id_number") {
+      result = await window.electronAPI.getInvoiceByNationalId(national_id_number);
+      setPendding(false);
     } else {
-      result = await window.electronAPI.getInvoiceByNationalId(filterInput.value);
+      result = await window.electronAPI.getTodayInvoices();
+      setPendding(false);
     }
 
     setInvoices(result);
@@ -82,22 +103,9 @@ function Invoices() {
         </Link>
       </header>
       <div className="flex gap-3 mt-5">
-        <Input
-          dir="ltr"
-          placeholder="جستجو شماره فاکتور "
-          name="number"
-          onChange={handleFilterInputChange}
-          disabled={filterInput?.name === "national_id_number"}
-        />
-
-        <Input
-          dir="ltr"
-          placeholder="جستجو کد ملی مشتری"
-          name="national_id_number"
-          onChange={handleFilterInputChange}
-          disabled={filterInput?.name === "number"}
-        />
-        <Button type="button" onClick={handleSeachCustomers}>
+        <Input dir="ltr" placeholder="جستجو شماره فاکتور " name="number" ref={numberRef} />
+        <Input dir="ltr" placeholder="جستجو کد ملی مشتری" name="national_id_number" ref={nationalIdNumberRef} />
+        <Button type="button" onClick={handleSearchInvoice}>
           جستجو
         </Button>
       </div>
@@ -116,7 +124,7 @@ function Invoices() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {invoices.length ? (
+            {!pendding && invoices.length ? (
               invoices.map((invoice) => (
                 <TableRow className="" key={invoice.id}>
                   <TableCell className="font-medium">{invoice.number}</TableCell>
@@ -132,11 +140,18 @@ function Invoices() {
                     )}
                   </TableCell>
                   <TableCell className="text-right flex justify-center gap-2">
-                    <Button asChild variant="secondary" size="icon" className="size-8 text-yellow-600">
-                      <Link to={`/invoices/${invoice.id}`}>
-                        <Eye />
-                      </Link>
-                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Button asChild variant="secondary" size="icon" className="size-8 text-violet-500">
+                          <Link to={`/invoices/${invoice.id}`}>
+                            <Eye />
+                          </Link>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="font-iransans font-light">مشاهده فاکتور</p>
+                      </TooltipContent>
+                    </Tooltip>
 
                     <ConfirmDialog
                       title="آیا از حذف فاکتور مطمئن هستید ؟"
@@ -153,11 +168,72 @@ function Invoices() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={7}>
-                  <div className="flex justify-center">
-                    <EmptyData message="فاکتوری برای امروز وجود ندارد" />
-                  </div>
-                </TableCell>
+                {pendding ? (
+                  <>
+                    <TableCell className="space-y-3">
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                    </TableCell>
+                    <TableCell className="space-y-3">
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                    </TableCell>{" "}
+                    <TableCell className="space-y-3">
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                    </TableCell>{" "}
+                    <TableCell className="space-y-3">
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                    </TableCell>
+                    <TableCell className="space-y-3">
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                    </TableCell>
+                    <TableCell className="space-y-3">
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                    </TableCell>
+                    <TableCell className="space-y-3">
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                      <Skeleton className="h-[20px]" />
+                    </TableCell>
+                  </>
+                ) : (
+                  <TableCell colSpan={7}>
+                    <div className="flex justify-center">
+                      <EmptyData message="فاکتوری برای نمایش وجود ندارد." />
+                    </div>
+                  </TableCell>
+                )}
               </TableRow>
             )}
           </TableBody>

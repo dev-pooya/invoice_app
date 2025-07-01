@@ -46,20 +46,20 @@ function getAllCustomers() {
 function getCustomerById(id, columns = "*") {
   return db.prepare(`SELECT ${columns} FROM customers WHERE id = ?`).get(id);
 }
-function getLatestCustomers(limit = 50) {
+function getLatestCustomers(limit = 20) {
   return db.prepare("SELECT * FROM customers ORDER BY created_at DESC LIMIT ?").all(limit);
 }
 
 // search customers
 function searchCustomers(criteria) {
   if (criteria.name === "national_id_number") {
-    return db.prepare("SELECT * FROM customers WHERE national_id_number = ?").all(criteria.value);
+    return db.prepare("SELECT * FROM customers WHERE national_id_number = ? LIMIT 1").all(criteria.value);
   }
 
   if (criteria.name === "full_name") {
     return db
-      .prepare("SELECT * FROM customers WHERE full_name LIKE ? ORDER BY created_at DESC")
-      .all(`${criteria.value}%`);
+      .prepare("SELECT * FROM customers WHERE full_name LIKE ? ORDER BY created_at DESC LIMIT 20")
+      .all(`%${criteria.value}%`);
   }
 
   return []; // no filter provided

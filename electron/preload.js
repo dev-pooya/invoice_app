@@ -18,4 +18,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   paginateInvoiceByCustomerId: (id, currentPage) => ipcRenderer.invoke("invoice:paginateByCustomerId", id, currentPage),
   deleteInvoice: (id) => ipcRenderer.invoke("invoice:delete", id),
   printInvoice: (options) => ipcRenderer.invoke("invoice:print", options),
+  saveInvoiceAsPdf: (options) => ipcRenderer.invoke("invoice:savePdf", options),
+  closeAppWindow: () => ipcRenderer.invoke("window:close"),
+  minimizeAppWindow: () => ipcRenderer.invoke("window:minimize"),
+  maximizeAppWindow: () => ipcRenderer.invoke("window:maximize"),
 });

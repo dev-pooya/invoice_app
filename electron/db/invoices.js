@@ -64,11 +64,10 @@ function getTodayInvoices() {
       customers.national_id_number
     FROM invoices
     JOIN customers ON customers.id = invoices.customer_id
-    WHERE DATE(invoices.created_at) = DATE('now', 'localtime')
     ORDER BY invoices.created_at DESC
     LIMIT 20
   `);
-
+  // for today query WHERE DATE(invoices.created_at) = DATE('now', 'localtime')
   return stmt.all(); // returns an array of invoice rows
 }
 

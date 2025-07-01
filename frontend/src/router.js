@@ -9,6 +9,7 @@ import CustomerShow from "./pages/costomers/CustomerShow";
 import Invoices from "./pages/invoices/Invoices";
 import InvoiceCreate from "./pages/invoices/InvoiceCreate";
 import InvoiceShow from "./pages/invoices/InvoiceShow";
+import Backups from "./pages/backups/Backups";
 
 async function getCustomer(id) {
   const result = await window.electronAPI.getCustomerById(id);
@@ -23,7 +24,7 @@ const router = createMemoryRouter([
   {
     Component: Layout,
     children: [
-      { index: true, Component: Test },
+      { index: true, Component: Customers },
       {
         path: "/customers",
         children: [
@@ -48,6 +49,10 @@ const router = createMemoryRouter([
           { path: "create", Component: InvoiceCreate },
           { path: ":id", Component: InvoiceShow, loader: async ({ params }) => await getInvoice(parseInt(params.id)) },
         ],
+      },
+      {
+        path: "backups",
+        children: [{ index: true, Component: Backups }],
       },
     ],
   },

@@ -18,12 +18,26 @@ function InvoiceShow() {
       alert("Printing not available in this environment.");
     }
   }
+  // handle invoice save as PDF
+  function handleSaveInvoiceAsPdf(e) {
+    if (window.electronAPI?.printInvoice) {
+      window.electronAPI.saveInvoiceAsPdf({
+        silent: true,
+        landscape: true,
+        pagesPerSheet: 1,
+        pageSize: "A5",
+        id: invoice.id,
+      }); // you can pass more options later
+    } else {
+      alert("saving not available in this environment.");
+    }
+  }
 
   return (
     <div className="p-5 bg-white text-black dark:bg-white dark:text-black">
       <aside className="no-print flex items-center gap-3">
         <h1 className="text-2xl font-semibold ml-auto">اطلاعات فاکتور </h1>
-        <Button disabled type="button" variant="outline" className="w-xs cursor-pointer">
+        <Button type="button" onClick={handleSaveInvoiceAsPdf} variant="outline" className="w-xs cursor-pointer">
           ذحیره به صورت PDF
         </Button>
         <Button type="button" onClick={handlePrintInvoice} className="w-xs cursor-pointer">

@@ -27,16 +27,21 @@ import EmptyData from "../../components/EmptyData";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { Link, useLoaderData } from "react-router";
 import { formatRegisterDate } from "../../lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function CustomerShow() {
   const customer = useLoaderData();
-
+  const [pendding, setPendding] = useState(true);
   const [pageData, setPageData] = useState({});
   const { totalPages, totalRecords } = pageData;
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    window.electronAPI.paginateInvoiceByCustomerId(customer.id, currentPage).then(setPageData);
+    window.electronAPI.paginateInvoiceByCustomerId(customer.id, currentPage).then((res) => {
+      setPendding(false);
+      return setPageData(res);
+    });
   }, [currentPage]);
 
   async function deleteInvoice(id) {
@@ -50,12 +55,13 @@ function CustomerShow() {
     let page = target;
     if (target <= 0) page = 1;
     if (target > totalPages) page = totalPages;
+    setPendding(true);
 
     setCurrentPage(page);
   }
 
   return (
-    <div className="p-5 bg-amber-50 grid grid-cols-[40%] gap-3">
+    <div className="p-5  grid grid-cols-[40%] gap-3">
       <Card>
         <CardContent className="text-sm">
           <div className="grid grid-cols-2 gap-4 ">
@@ -79,7 +85,7 @@ function CustomerShow() {
       <Card>
         <CardContent className="flex justify-center">
           {customer.national_card_path ? (
-            <img src={`secure-image://${customer.national_card_path}`} className="w-full" />
+            <img src={`secure-image://${customer.national_card_path}`} className=" max-h-64" />
           ) : (
             <img src="/no-image.png" className="invert rounded-xl" />
           )}
@@ -102,7 +108,7 @@ function CustomerShow() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {pageData?.invoices?.length ? (
+                {!pendding && pageData?.invoices?.length ? (
                   pageData.invoices?.map((invoice) => (
                     <TableRow className="" key={invoice.id}>
                       <TableCell className="font-medium">{invoice.number}</TableCell>
@@ -118,11 +124,18 @@ function CustomerShow() {
                         )}
                       </TableCell>
                       <TableCell className="text-right flex justify-center gap-2">
-                        <Button asChild variant="secondary" size="icon" className="size-8 text-yellow-600">
-                          <Link to={`/invoices/${invoice.id}`}>
-                            <Eye />
-                          </Link>
-                        </Button>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <Button asChild variant="secondary" size="icon" className="size-8 text-violet-500">
+                              <Link to={`/invoices/${invoice.id}`}>
+                                <Eye />
+                              </Link>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="font-iransans font-light">مشاهده فاکتور</p>
+                          </TooltipContent>
+                        </Tooltip>
 
                         <ConfirmDialog
                           title="آیا از حذف فاکتور مطمئن هستید ؟"
@@ -139,17 +152,78 @@ function CustomerShow() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={7}>
-                      <div className="flex justify-center">
-                        <EmptyData message="مشتری فاکتوری ندارد" />
-                      </div>
-                    </TableCell>
+                    {pendding ? (
+                      <>
+                        <TableCell className="space-y-3">
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                        </TableCell>
+                        <TableCell className="space-y-3">
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                        </TableCell>{" "}
+                        <TableCell className="space-y-3">
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                        </TableCell>{" "}
+                        <TableCell className="space-y-3">
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                        </TableCell>
+                        <TableCell className="space-y-3">
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                        </TableCell>
+                        <TableCell className="space-y-3">
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                        </TableCell>
+                        <TableCell className="space-y-3">
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                          <Skeleton className="h-[20px]" />
+                        </TableCell>
+                      </>
+                    ) : (
+                      <TableCell colSpan={7}>
+                        <div className="flex justify-center">
+                          <EmptyData message="فاکتوری برای نمایش وجود ندارد." />
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 )}
               </TableBody>
             </Table>
           </div>
-          <footer className="mt-5 flex justify-center gap-3 flex-wrap" dir="ltr">
+          <footer className="my-5 flex justify-center gap-3 flex-wrap" dir="ltr">
             <Button size="sm" variant="outline" onClick={() => changeCurrentPage(currentPage - 1)}>
               <ChevronLeft />
               <span> قبلی</span>

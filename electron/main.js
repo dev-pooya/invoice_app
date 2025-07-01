@@ -1,5 +1,5 @@
 // electron/main.js
-const { app, BrowserWindow, ipcMain, Menu, dialog, protocol } = require("electron");
+const { app, BrowserWindow, ipcMain, Menu, dialog, protocol, shell } = require("electron");
 const path = require("path");
 const fs = require("fs");
 
@@ -32,6 +32,7 @@ function createWindow() {
     // titleBarStyle: "hidden", // Optional, good for macOS
     minWidth: 1200,
     minHeight: 600,
+    icon: path.join(__dirname, "assets", "icon.ico"), // Make sure the path is correct
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
@@ -224,4 +225,70 @@ ipcMain.handle("invoice:print", async (event, options = {}) => {
     if (!success) console.log(errorType);
     if (success) console.log("printing...");
   });
+});
+
+// handle save as pdf
+ipcMain.handle("invoice:savePdf", async (event, options = {}) => {
+  const window = BrowserWindow.getFocusedWindow();
+  if (!window) return { success: false, error: "No active window" };
+
+  // a) Get Documents/Invoices path
+  const documentsPath = app.getPath("documents");
+  const invoicesDir = path.join(documentsPath, "Invoices");
+
+  // b) Create the folder if it doesn't exist
+  if (!fs.existsSync(invoicesDir)) {
+    fs.mkdirSync(invoicesDir, { recursive: true });
+  }
+
+  // c) Set default file path
+  const defaultFilePath = path.join(invoicesDir, `invoice${options.id}.pdf`);
+
+  // 1 Show save dialog
+  const { canceled, filePath } = await dialog.showSaveDialog({
+    title: "Save Invoice as PDF",
+    defaultPath: defaultFilePath,
+    filters: [{ name: "PDF Files", extensions: ["pdf"] }],
+  });
+
+  if (canceled || !filePath) return { success: false, canceled: true };
+
+  try {
+    // 2. Generate PDF with printing styles
+    const pdfBuffer = await window.webContents.printToPDF({
+      printBackground: true,
+      landscape: options.landscape || false, // optional
+      pageSize: options.pageSize || "A5", // optional
+    });
+
+    // 3. Save to user-selected path
+    fs.writeFileSync(filePath, pdfBuffer);
+    // 7. Open folder in OS file manager
+    setTimeout(() => {
+      shell.openPath(path.dirname(filePath));
+    }, 2000);
+
+    return { success: true, path: filePath };
+  } catch (error) {
+    console.error("PDF generation failed:", error);
+    return { success: false, error: error.message };
+  }
+});
+
+// handle window close
+ipcMain.handle("window:close", async (event) => {
+  // TODO add app.quit()
+  win.close();
+});
+// handle window minimize
+ipcMain.handle("window:minimize", async (event) => {
+  win.minimize();
+});
+// handle window maximize
+ipcMain.handle("window:maximize", async (event) => {
+  if (win.isMaximized()) {
+    win.unmaximize();
+  } else {
+    win.maximize();
+  }
 });

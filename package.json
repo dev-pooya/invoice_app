@@ -9,6 +9,13 @@
     "dev": "electronmon .",
     "start": "electron ."
   },
+  "build": {
+    "appId": "com.yourcompany.invoiceapp",
+    "productName": "InvoiceApp",
+    "win": {
+      "icon": "electron/assets/icon.ico"
+    }
+  },
   "keywords": [],
   "author": "dev-pooya",
   "license": "MIT",

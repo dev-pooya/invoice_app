@@ -5,7 +5,7 @@ import Logo from "./Logo";
 
 function Sidebar() {
   return (
-    <aside className=" bg-slate-900 text-white  min-h-[100vh] no-print">
+    <aside className=" bg-slate-950 text-white  min-h-[100vh] no-print">
       <Logo />
       <ul className="flex flex-col gap-3 ">
         <li className="flex items-center">
@@ -59,7 +59,7 @@ function Sidebar() {
         </li>
         <li className="flex items-center">
           <NavLink
-            to="/backup"
+            to="/backups"
             className={({ isActive }) =>
               isActive ? "bg-slate-600 p-3 w-full flex items-center gap-3" : "p-3 w-full flex items-center gap-3"
             }

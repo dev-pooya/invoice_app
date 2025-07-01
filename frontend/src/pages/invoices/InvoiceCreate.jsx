@@ -35,6 +35,7 @@ import { commaSeprate } from "../../lib/utils";
 import { generateId } from "../../lib/utils";
 import { useGlobalContext } from "../../context/GlobalContext";
 import EmptyData from "../../components/EmptyData";
+import { useNavigate } from "react-router";
 
 const initialItemForm = {
   title: "",
@@ -48,6 +49,8 @@ function InvoiceCreate() {
   const [errors, setErrors] = useState(null);
   // refs
   const firstInputRef = useRef(null);
+
+  const navigate = useNavigate();
 
   // global states
   const {
@@ -67,6 +70,7 @@ function InvoiceCreate() {
     setInvoiceFormType,
     setInvoiceFormBankNumber,
     getInvoiceFormData,
+    resetInvoiceForm,
   } = useGlobalContext();
 
   // handle the submition of second form for adding the items to the invoice
@@ -119,7 +123,10 @@ function InvoiceCreate() {
     const formData = getInvoiceFormData();
 
     const result = await window.electronAPI.addInvoice(formData);
-    console.log("result = ", result);
+    if (result.success) {
+      resetInvoiceForm();
+      navigate(`/invoices/${result.invoice_id}`);
+    }
   }
   function handleInvoicePreview(e) {
     // TODO

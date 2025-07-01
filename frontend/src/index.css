@@ -3,6 +3,15 @@
 
 @custom-variant dark (&:is(.dark *));
 
+.mcc_main {
+  overflow: hidden !important;
+  height: 100vh;
+}
+.mcc_content {
+  overflow-y: scroll !important;
+  height: 100%;
+  direction: rtl;
+}
 :root {
   --radius: 0.55rem;
   --background: oklch(1 0 0);

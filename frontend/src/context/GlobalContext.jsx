@@ -45,6 +45,10 @@ export const GlobalProvider = ({ children }) => {
     };
   }
 
+  function resetInvoiceForm() {
+    // TODO reset the form
+  }
+
   return (
     <GlobalContext.Provider
       value={{
@@ -55,6 +59,7 @@ export const GlobalProvider = ({ children }) => {
         invoiceFormItems,
         invoiceFormType,
         invoiceFormBankNumber,
+
         addItem,
         removeItem,
         findCustomer,
@@ -63,7 +68,9 @@ export const GlobalProvider = ({ children }) => {
         setIsManualDatePicking,
         setInvoiceFormType,
         setInvoiceFormBankNumber,
+        setInvoiceFormCustomer,
         getInvoiceFormData,
+        resetInvoiceForm,
       }}
     >
       {children}

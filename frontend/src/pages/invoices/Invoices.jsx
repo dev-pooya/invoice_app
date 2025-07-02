@@ -24,10 +24,11 @@ import ConfirmDialog from "../../components/ConfirmDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import TableSkeleton from "../../components/TableSkeleton";
 
 function Invoices() {
   const [invoices, setInvoices] = useState([]);
-  const [filterInput, setFilterInput] = useState(null);
+
   const [pendding, setPendding] = useState(true);
 
   // input refs
@@ -40,15 +41,6 @@ function Invoices() {
       return setInvoices(res);
     });
   }, []);
-
-  // handle filter input change
-  // function handleFilterInputChange(e) {
-  //   if (!e.target.value.length) {
-  //     setFilterInput(null);
-  //   } else {
-  //     setFilterInput({ name: e.target.name, value: e.target.value.trim() });
-  //   }
-  // }
 
   async function handleSearchInvoice() {
     const searchQuery = {};
@@ -169,64 +161,9 @@ function Invoices() {
             ) : (
               <TableRow>
                 {pendding ? (
-                  <>
-                    <TableCell className="space-y-3">
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                    </TableCell>
-                    <TableCell className="space-y-3">
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                    </TableCell>{" "}
-                    <TableCell className="space-y-3">
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                    </TableCell>{" "}
-                    <TableCell className="space-y-3">
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                    </TableCell>
-                    <TableCell className="space-y-3">
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                    </TableCell>
-                    <TableCell className="space-y-3">
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                    </TableCell>
-                    <TableCell className="space-y-3">
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                    </TableCell>
-                  </>
+                  <TableCell colSpan="7">
+                    <TableSkeleton n={20} />
+                  </TableCell>
                 ) : (
                   <TableCell colSpan={7}>
                     <div className="flex justify-center">

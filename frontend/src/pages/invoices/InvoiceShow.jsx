@@ -97,7 +97,7 @@ function InvoiceShow() {
                 <th className="pt-2 align-middle">شرح</th>
                 <th className="min-w-[80px]">تعداد</th>
                 <th className="pt-3">فی </th>
-                <th className="pt-3">قیمت</th>
+                <th className="pt-3">قیمت (ریال)</th>
               </tr>
             </thead>
             <tbody>
@@ -119,7 +119,7 @@ function InvoiceShow() {
                   <div className="flex justify-between items-center">
                     <span className="shrink-0 relative top-1">جمع کل به حروف : </span>
                     <span className="font-iransans text-sm tracking-tight ">
-                      {num2persian(roundLastThreeToZero(invoice.total))}
+                      {num2persian(roundLastThreeToZero(invoice.total))} ریال
                     </span>
                     <span className="shrink-0">به عدد : </span>
                   </div>

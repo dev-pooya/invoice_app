@@ -128,12 +128,12 @@ function InvoiceCreate() {
       navigate(`/invoices/${result.invoice_id}`);
     }
   }
-  function handleInvoicePreview(e) {
-    // TODO
+  function handleResetForm(e) {
+    // TODO should be added in global context
   }
 
   return (
-    <div className="p-5 ">
+    <div className="p-5">
       <header>
         <h1 className="text-2xl font-semibold mb-5">فرم صدور فاکتور جدید</h1>
       </header>
@@ -299,7 +299,9 @@ function InvoiceCreate() {
                 value={itemForm.fee}
                 onChange={(e) => setItemForm({ ...itemForm, fee: e.target.value })}
               />
-              <p className="text-primary text-sm mt-2">{commaSeprate(itemForm.fee)}</p>
+              <p dir="ltr" className="text-primary text-sm mt-2 pl-2">
+                {commaSeprate(itemForm.fee)}
+              </p>
               {errors?.fee && <p className="text-red-500 text-sm mt-1 ">{errors.fee}</p>}
             </div>
             <Button type="submit">
@@ -358,8 +360,8 @@ function InvoiceCreate() {
           <Button className="grow" type="button" onClick={handleInvoiceSubmition}>
             صدور فاکتور
           </Button>
-          <Button className="grow" variant="outline" type="button" onClick={handleInvoicePreview}>
-            پیش نمایش فاکتور
+          <Button className="grow" variant="outline" type="button" onClick={handleResetForm}>
+            ریست کردن فرم
           </Button>
         </CardFooter>
       </Card>

@@ -35,6 +35,7 @@ function Layout() {
       <Sidebar />
       <div className="mcc_content bg-background ">
         <Outlet />
+        <div className="w-full h-10"></div>
       </div>
     </main>
   );

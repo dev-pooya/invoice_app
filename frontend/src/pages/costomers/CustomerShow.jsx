@@ -154,64 +154,11 @@ function CustomerShow() {
                 ) : (
                   <TableRow>
                     {pendding ? (
-                      <>
-                        <TableCell className="space-y-3">
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                        </TableCell>
-                        <TableCell className="space-y-3">
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                        </TableCell>{" "}
-                        <TableCell className="space-y-3">
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                        </TableCell>{" "}
-                        <TableCell className="space-y-3">
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                        </TableCell>
-                        <TableCell className="space-y-3">
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                        </TableCell>
-                        <TableCell className="space-y-3">
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                        </TableCell>
-                        <TableCell className="space-y-3">
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                          <Skeleton className="h-[20px]" />
-                        </TableCell>
-                      </>
+                      <TableCell colSpan={7}>
+                        <div className="flex justify-center">
+                          <EmptyData message="فاکتوری برای این مشتری  وجود ندارد." />
+                        </div>
+                      </TableCell>
                     ) : (
                       <TableCell colSpan={7}>
                         <div className="flex justify-center">

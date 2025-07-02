@@ -133,6 +133,26 @@
   }
 }
 
+/* Default scrollbar style (light) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1; /* light blue-gray */
+  border-radius: 9999px;
+}
+
+/* Dark mode scrollbar */
+body.dark ::-webkit-scrollbar-thumb {
+  background-color: #475569; /* dark slate */
+}
+
 @media print {
   :root {
     font-size: 11pt;

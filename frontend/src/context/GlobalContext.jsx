@@ -14,6 +14,8 @@ export const GlobalProvider = ({ children }) => {
   const [invoiceFormType, setInvoiceFormType] = useState("sell");
   const [isManualDatePicking, setIsManualDatePicking] = useState(false);
 
+  // input refs
+
   // adding item to the items list
   function addItem(item) {
     const id = generateId();

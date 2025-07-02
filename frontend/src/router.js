@@ -1,4 +1,4 @@
-import { createBrowserRouter, createMemoryRouter } from "react-router";
+import { createBrowserRouter, createMemoryRouter, Navigate } from "react-router";
 
 import Test from "./pages/Test";
 import Layout from "./Layout";
@@ -10,6 +10,7 @@ import Invoices from "./pages/invoices/Invoices";
 import InvoiceCreate from "./pages/invoices/InvoiceCreate";
 import InvoiceShow from "./pages/invoices/InvoiceShow";
 import Backups from "./pages/backups/Backups";
+import Dashboard from "./pages/dashboard/Dashboard";
 
 async function getCustomer(id) {
   const result = await window.electronAPI.getCustomerById(id);
@@ -24,9 +25,9 @@ const router = createMemoryRouter([
   {
     Component: Layout,
     children: [
-      { index: true, Component: Customers },
+      { index: true, Component: Dashboard },
       {
-        path: "/customers",
+        path: "customers",
         children: [
           { index: true, Component: Customers },
           { path: "create", Component: CustomersCreate },

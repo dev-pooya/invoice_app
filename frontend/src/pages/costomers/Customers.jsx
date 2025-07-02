@@ -19,6 +19,7 @@ import { Eye, FilePlus, Scroll, Trash2, UserPen } from "lucide-react";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import EmptyData from "@/components/EmptyData";
 import { useGlobalContext } from "../../context/GlobalContext";
+import TableSkeleton from "../../components/TableSkeleton";
 
 function Customers() {
   const [customers, setCustomers] = useState([]);
@@ -82,7 +83,7 @@ function Customers() {
   async function deleteCustomer(id) {
     const result = await window.electronAPI.deleteCustomer(id);
 
-    if (result.changes > 0) {
+    if (result?.changes > 0) {
       setCustomers((prevs) => prevs.filter((customer) => customer.id !== id));
     }
   }
@@ -126,7 +127,7 @@ function Customers() {
                   <TableCell>{customer.phone_number}</TableCell>
                   <TableCell className="text-right flex justify-center gap-2">
                     <Tooltip>
-                      <TooltipTrigger>
+                      <TooltipTrigger asChild>
                         <Button asChild variant="secondary" size="icon" className="size-8 text-blue-600">
                           <Link to={`/customers/edit/${customer.id}`}>
                             <UserPen />
@@ -138,7 +139,7 @@ function Customers() {
                       </TooltipContent>
                     </Tooltip>
                     <Tooltip>
-                      <TooltipTrigger>
+                      <TooltipTrigger asChild>
                         <Button asChild variant="secondary" size="icon" className="size-8 text-violet-500">
                           <Link to={`/customers/${customer.id}`}>
                             <Eye />
@@ -151,7 +152,7 @@ function Customers() {
                     </Tooltip>
 
                     <Tooltip>
-                      <TooltipTrigger>
+                      <TooltipTrigger asChild>
                         <Button
                           type="button"
                           variant="secondary"
@@ -183,42 +184,11 @@ function Customers() {
             ) : (
               <TableRow>
                 {pendding ? (
-                  <>
-                    <TableCell className="space-y-3">
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                    </TableCell>
-                    <TableCell className="space-y-3">
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                    </TableCell>{" "}
-                    <TableCell className="space-y-3">
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                    </TableCell>{" "}
-                    <TableCell className="space-y-3">
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                      <Skeleton className="h-[20px]" />
-                    </TableCell>
-                  </>
+                  <TableCell colSpan={4}>
+                    <TableSkeleton n={20} />
+                  </TableCell>
                 ) : (
-                  <TableCell colSpan={7}>
+                  <TableCell colSpan={4}>
                     <div className="flex justify-center">
                       <EmptyData message="مشتری برای نمایش وجود ندارد." />
                     </div>

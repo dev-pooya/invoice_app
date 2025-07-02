@@ -22,4 +22,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
   closeAppWindow: () => ipcRenderer.invoke("window:close"),
   minimizeAppWindow: () => ipcRenderer.invoke("window:minimize"),
   maximizeAppWindow: () => ipcRenderer.invoke("window:maximize"),
+  createFullBackup: () => ipcRenderer.invoke("backup:createFull"),
+  restoreFullBackup: () => ipcRenderer.invoke("backup:restoreFull"),
 });

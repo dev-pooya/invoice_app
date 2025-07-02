@@ -23,15 +23,25 @@ const {
   deleteInvoice,
   paginateInvoiceByCustomerId,
 } = require("./db/invoices");
+const { createBackup, restoreBackup } = require("./ipc/backup");
 
+// teh global variable to access teh window
 let win;
+
+let isBusy = false;
+
+// global variables for pathes
+// const userData = app.getPath("userData");
+// const dbPath = path.join(userData, "database.sqlite");
+// const uploadsPath = path.join(userData, "uploads");
+
 function createWindow() {
   win = new BrowserWindow({
-    width: 1200,
-    height: 700,
+    width: 1800,
+    height: 750,
     titleBarStyle: "hidden", // Optional, good for macOS
     minWidth: 1200,
-    minHeight: 600,
+    minHeight: 650,
     icon: path.join(__dirname, "assets", "icon.ico"), // Make sure the path is correct
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
@@ -41,12 +51,12 @@ function createWindow() {
   });
 
   // Load dev server in dev mode
-  // win.loadURL("http://localhost:5173");
+  win.loadURL("http://localhost:5173");
 
   //for production mode
-  win.loadFile(path.join(__dirname, "../frontend/dist/index.html"));
+  // win.loadFile(path.join(__dirname, "../frontend/dist/index.html"));
 
-  // win.webContents.openDevTools(); // ← This opens DevTools automatically
+  win.webContents.openDevTools(); // ← This opens DevTools automatically
 }
 
 // solve the file view problem
@@ -158,7 +168,7 @@ ipcMain.handle("customers:delete", (event, id) => {
   // get image path if exist
   const customer = getCustomerById(id, "national_card_path");
 
-  const imagePath = customer.national_card_path;
+  const imagePath = customer?.national_card_path || null;
   try {
     const result = deleteCustomer(id);
     console.log(`Customer ${id} deleted from database.`);
@@ -289,5 +299,58 @@ ipcMain.handle("window:maximize", async (event) => {
     win.unmaximize();
   } else {
     win.maximize();
+  }
+});
+
+// backup fanctionality
+ipcMain.handle("backup:createFull", async () => {
+  const now = new Date();
+  const timestamp = now.toISOString().replace(/T/, "_").replace(/:/g, "-").replace(/\..+/, "");
+  const defaultName = `invoice_backup-${timestamp}.zip`;
+
+  const { filePath } = await dialog.showSaveDialog({
+    title: "Save Backup",
+    defaultPath: path.join(app.getPath("documents"), defaultName),
+    filters: [{ name: "Zip Files", extensions: ["zip"] }],
+  });
+
+  if (!filePath) return false;
+
+  isBusy = true;
+  await createBackup(filePath);
+  isBusy = false;
+
+  return true;
+});
+
+// restore functionality
+ipcMain.handle("backup:restoreFull", async () => {
+  const { filePaths } = await dialog.showOpenDialog({
+    title: "Select a Backup File",
+    filters: [{ name: "Zip Files", extensions: ["zip"] }],
+    properties: ["openFile"],
+  });
+
+  if (!filePaths[0]) return false;
+
+  const confirm = dialog.showMessageBoxSync(win, {
+    type: "warning",
+    buttons: ["Cancel", "Restore"],
+    defaultId: 1,
+    cancelId: 0,
+    message: "Restoring will overwrite your current data.\nAre you sure you want to proceed?",
+  });
+
+  if (confirm !== 1) return false;
+
+  isBusy = true;
+  try {
+    await restoreBackup(filePaths[0]);
+    return true;
+  } catch (err) {
+    console.error("Restore failed:", err);
+    return { error: err.message };
+  } finally {
+    isBusy = false;
   }
 });

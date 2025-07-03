@@ -58,7 +58,7 @@ function searchCustomers(criteria) {
 
   if (criteria.name === "full_name") {
     return db
-      .prepare("SELECT * FROM customers WHERE full_name LIKE ? ORDER BY created_at DESC LIMIT 20")
+      .prepare("SELECT * FROM customers WHERE full_name LIKE ? ORDER BY created_at DESC LIMIT 30")
       .all(`%${criteria.value}%`);
   }
 

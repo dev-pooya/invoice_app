@@ -60,7 +60,6 @@ function InvoiceCreate() {
     isManualDatePicking,
     invoiceFormItems,
     invoiceFormType,
-    invoiceFormBankNumber,
     addItem,
     removeItem,
     findCustomer,
@@ -68,9 +67,9 @@ function InvoiceCreate() {
     setInvoiceFormDate,
     setIsManualDatePicking,
     setInvoiceFormType,
-    setInvoiceFormBankNumber,
     getInvoiceFormData,
     resetInvoiceForm,
+    invoiceFormBankNumberRef,
   } = useGlobalContext();
 
   // handle the submition of second form for adding the items to the invoice
@@ -82,7 +81,7 @@ function InvoiceCreate() {
 
     // title: required
     if (!itemForm.title.trim()) {
-      errors.title = " شرح کالا الزامی است";
+      errors.title = "  شرح کالا را وارد کنید   ";
     }
 
     //  qty: required and digits
@@ -121,6 +120,10 @@ function InvoiceCreate() {
   // handle invoice submition
   async function handleInvoiceSubmition(e) {
     const formData = getInvoiceFormData();
+    if (!formData) {
+      setErrors((prevs) => ({ ...prevs, customer: "لطفا یک مشتری انتخاب کنید و حداقل یک محصول به فاکتور اضافه کنید" }));
+      return;
+    }
 
     const result = await window.electronAPI.addInvoice(formData);
     if (result.success) {
@@ -129,7 +132,7 @@ function InvoiceCreate() {
     }
   }
   function handleResetForm(e) {
-    // TODO should be added in global context
+    resetInvoiceForm();
   }
 
   return (
@@ -216,13 +219,7 @@ function InvoiceCreate() {
               </div>
               <div className="flex gap-3 items-center">
                 <Label className="whitespace-nowrap">شماره کارت | حساب :</Label>
-                <Input
-                  type="text"
-                  dir="ltr"
-                  name="bank_number"
-                  value={invoiceFormBankNumber}
-                  onChange={(e) => setInvoiceFormBankNumber(e.target.value)}
-                />
+                <Input type="text" dir="ltr" name="bank_number" ref={invoiceFormBankNumberRef} />
               </div>
               <RadioGroup
                 value={invoiceFormType}
@@ -356,11 +353,12 @@ function InvoiceCreate() {
             )}
           </Table>
         </CardContent>
+        {errors?.customer && <p className="text-red-500 pr-5  mt-2 text-center ">{errors.customer}</p>}
         <CardFooter className="gap-3">
-          <Button className="grow" type="button" onClick={handleInvoiceSubmition}>
+          <Button className="grow cursor-pointer" type="button" onClick={handleInvoiceSubmition}>
             صدور فاکتور
           </Button>
-          <Button className="grow" variant="outline" type="button" onClick={handleResetForm}>
+          <Button className="grow cursor-pointer" variant="outline" type="button" onClick={handleResetForm}>
             ریست کردن فرم
           </Button>
         </CardFooter>

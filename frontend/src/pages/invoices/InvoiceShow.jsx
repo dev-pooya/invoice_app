@@ -14,7 +14,7 @@ function InvoiceShow() {
   // handle invoice print
   function handlePrintInvoice(e) {
     if (window.electronAPI?.printInvoice) {
-      window.electronAPI.printInvoice({ silent: true, landscape: true, pagesPerSheet: 1, pageSize: "A5" }); // you can pass more options later
+      window.electronAPI.printInvoice({ silent: false, landscape: true, pagesPerSheet: 1, pageSize: "A5" }); // you can pass more options later
     } else {
       alert("Printing not available in this environment.");
     }

@@ -158,7 +158,7 @@ function CustomersCreate() {
               </AlertDescription>
             </Alert>
           ))}
-        {filePath && <img src={`secure-image://${filePath}`} alt="کارت ملی" className="max-h-[300px] mt-3" />}
+        {filePath && <img src={`file://${filePath}`} alt="کارت ملی" className="max-h-[300px] mt-3" />}
       </form>
     </div>
   );

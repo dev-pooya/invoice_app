@@ -159,6 +159,30 @@ function paginateInvoiceByCustomerId(id, currentPage = 1) {
   };
 }
 
+function paginateInvoices(currentPage = 1) {
+  const limit = 20;
+  const offset = (currentPage - 1) * limit;
+
+  const stmt = db.prepare(`
+    SELECT * FROM invoices
+    ORDER BY date DESC
+    LIMIT ? OFFSET ?
+  `);
+
+  const invoices = stmt.all(limit, offset);
+
+  const countStmt = db.prepare(`
+    SELECT COUNT(*) AS total FROM invoices
+  `);
+  const { total } = countStmt.get();
+  return {
+    invoices,
+    currentPage,
+    totalPages: Math.ceil(total / limit),
+    totalRecords: total,
+  };
+}
+
 module.exports = {
   createInvoice,
   getTodayInvoices,
@@ -167,4 +191,5 @@ module.exports = {
   getInvoiceById,
   deleteInvoice,
   paginateInvoiceByCustomerId,
+  paginateInvoices,
 };

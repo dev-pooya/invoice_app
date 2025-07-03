@@ -1,5 +1,5 @@
 // electron/main.js
-const { app, BrowserWindow, ipcMain, Menu, dialog, protocol, shell } = require("electron");
+const { app, BrowserWindow, ipcMain, Menu, dialog, protocol, shell, net } = require("electron");
 const path = require("path");
 const fs = require("fs");
 
@@ -22,18 +22,28 @@ const {
   getInvoiceById,
   deleteInvoice,
   paginateInvoiceByCustomerId,
+  paginateInvoices,
 } = require("./db/invoices");
 const { createBackup, restoreBackup } = require("./ipc/backup");
+const { getMimeType } = require("./helpers/helper");
 
 // teh global variable to access teh window
 let win;
 
-let isBusy = false;
+// Prevent multiple instances
+const gotTheLock = app.requestSingleInstanceLock();
 
-// global variables for pathes
-// const userData = app.getPath("userData");
-// const dbPath = path.join(userData, "database.sqlite");
-// const uploadsPath = path.join(userData, "uploads");
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on("second-instance", () => {
+    // Focus the window if the user tries to launch another instance
+    if (win) {
+      if (win.isMinimized()) win.restore();
+      win.focus();
+    }
+  });
+}
 
 function createWindow() {
   win = new BrowserWindow({
@@ -51,29 +61,15 @@ function createWindow() {
   });
 
   // Load dev server in dev mode
-  win.loadURL("http://localhost:5173");
+  // win.loadURL("http://localhost:5173");
 
   //for production mode
-  // win.loadFile(path.join(__dirname, "../frontend/dist/index.html"));
+  win.loadFile(path.join(__dirname, "../frontend/dist/index.html"));
 
-  win.webContents.openDevTools(); // ← This opens DevTools automatically
+  // win.webContents.openDevTools(); // ← This opens DevTools automatically
 }
 
-// solve the file view problem
-const protocolName = "secure-image";
-protocol.registerSchemesAsPrivileged([{ scheme: protocolName, privileges: { bypassCSP: true } }]);
-
 app.whenReady().then(() => {
-  protocol.registerFileProtocol(protocolName, (request, callback) => {
-    const url = request.url.replace(`${protocolName}://`, "");
-    try {
-      return callback(decodeURIComponent(url));
-    } catch (error) {
-      // Handle the error as needed
-      console.error(error);
-    }
-  });
-
   createWindow();
 
   // Remove the default menu
@@ -87,6 +83,8 @@ app.whenReady().then(() => {
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
+
+// ===========================================================
 
 // add customer
 ipcMain.handle("customers:add", (event, data) => {
@@ -218,6 +216,8 @@ ipcMain.handle("invoice:getToday", () => {
 ipcMain.handle("invoice:paginateByCustomerId", (event, id, currentPage) =>
   paginateInvoiceByCustomerId(id, currentPage)
 );
+// paginate invoices
+ipcMain.handle("invoice:paginate", (event, currentPage) => paginateInvoices(currentPage));
 
 // get invoice by number
 ipcMain.handle("invoice:getByNumber", (event, number) => getInvoiceByNumber(number));

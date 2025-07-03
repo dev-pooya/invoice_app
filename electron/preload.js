@@ -16,6 +16,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getInvoiceByNationalId: (nationalId) => ipcRenderer.invoke("invoice:getByNationalId", nationalId),
   getInvoiceById: (id) => ipcRenderer.invoke("invoice:getById", id),
   paginateInvoiceByCustomerId: (id, currentPage) => ipcRenderer.invoke("invoice:paginateByCustomerId", id, currentPage),
+  paginateInvoices: (currentPage) => ipcRenderer.invoke("invoice:paginate", currentPage),
   deleteInvoice: (id) => ipcRenderer.invoke("invoice:delete", id),
   printInvoice: (options) => ipcRenderer.invoke("invoice:print", options),
   saveInvoiceAsPdf: (options) => ipcRenderer.invoke("invoice:savePdf", options),

@@ -56,9 +56,10 @@ function CustomerShow() {
     let page = target;
     if (target <= 0) page = 1;
     if (target > totalPages) page = totalPages;
-    setPendding(true);
-
-    setCurrentPage(page);
+    if (page !== currentPage) {
+      setPendding(true);
+      setCurrentPage(page);
+    }
   }
 
   return (
@@ -86,9 +87,9 @@ function CustomerShow() {
       <Card>
         <CardContent className="flex justify-center">
           {customer.national_card_path ? (
-            <img src={`secure-image://${customer.national_card_path}`} className=" max-h-64" />
+            <img src={`file://${customer.national_card_path}`} className=" max-h-64" />
           ) : (
-            <img src={noAvatar} className="invert rounded-xl" />
+            <img src={noAvatar} className="invert dark:invert-0 rounded-xl" />
           )}
         </CardContent>
       </Card>
@@ -125,7 +126,7 @@ function CustomerShow() {
                         )}
                       </TableCell>
                       <TableCell className="text-right flex justify-center gap-2">
-                        <Tooltip>
+                        <Tooltip delayDuration={700}>
                           <TooltipTrigger>
                             <Button asChild variant="secondary" size="icon" className="size-8 text-violet-500">
                               <Link to={`/invoices/${invoice.id}`}>

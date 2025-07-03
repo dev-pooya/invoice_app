@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useRef, useState } from "react";
 import { generateId, getToday } from "../lib/utils";
 
 // 1️ Create the context
@@ -8,13 +8,14 @@ const GlobalContext = createContext();
 export const GlobalProvider = ({ children }) => {
   const [invoiceFormCustomer, setInvoiceFormCustomer] = useState(null);
   const [invoiceFormNationalId, setInvoiceFormNationalId] = useState();
-  const [invoiceFormBankNumber, setInvoiceFormBankNumber] = useState();
+
   const [invoiceFormItems, setInvoiceFormItems] = useState([]);
   const [invoiceFormDate, setInvoiceFormDate] = useState(getToday());
   const [invoiceFormType, setInvoiceFormType] = useState("sell");
   const [isManualDatePicking, setIsManualDatePicking] = useState(false);
 
   // input refs
+  const invoiceFormBankNumberRef = useRef(null);
 
   // adding item to the items list
   function addItem(item) {
@@ -32,23 +33,30 @@ export const GlobalProvider = ({ children }) => {
   async function findCustomer() {
     const result = await window.electronAPI.getCustomerByNationalId(invoiceFormNationalId);
     setInvoiceFormCustomer(result);
-    console.log(result);
     return Boolean(result);
   }
 
   // get full invoice formData
   function getInvoiceFormData() {
+    // validate
+    if (!invoiceFormCustomer || !invoiceFormItems.length) return null;
+
     return {
       customer_id: invoiceFormCustomer.id,
       date: invoiceFormDate,
-      bank_number: invoiceFormBankNumber,
+      bank_number: invoiceFormBankNumberRef.current.value.trim(),
       type: invoiceFormType,
       items: invoiceFormItems,
     };
   }
 
+  // reset the form
   function resetInvoiceForm() {
-    // TODO reset the form
+    setInvoiceFormCustomer(null);
+    invoiceFormBankNumberRef.current.value = "";
+    setInvoiceFormItems([]);
+    setInvoiceFormDate(getToday());
+    setIsManualDatePicking(false);
   }
 
   return (
@@ -60,7 +68,6 @@ export const GlobalProvider = ({ children }) => {
         isManualDatePicking,
         invoiceFormItems,
         invoiceFormType,
-        invoiceFormBankNumber,
 
         addItem,
         removeItem,
@@ -69,10 +76,11 @@ export const GlobalProvider = ({ children }) => {
         setInvoiceFormDate,
         setIsManualDatePicking,
         setInvoiceFormType,
-        setInvoiceFormBankNumber,
         setInvoiceFormCustomer,
         getInvoiceFormData,
         resetInvoiceForm,
+
+        invoiceFormBankNumberRef,
       }}
     >
       {children}

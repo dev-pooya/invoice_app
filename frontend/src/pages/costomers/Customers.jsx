@@ -92,13 +92,14 @@ function Customers() {
     <div className="p-5">
       <header className="flex items-center gap-1">
         <h1 className="text-xl font-semibold ml-auto">لیست مشتریان</h1>
-
-        <Link to={"/"}>
-          <Button variant="outline"> درون ریزی | import</Button>{" "}
-        </Link>
-        <Link to={"/"}>
-          <Button variant="outline"> برون بری | export</Button>{" "}
-        </Link>
+        <Button variant="outline" disabled>
+          {" "}
+          درون ریزی | import
+        </Button>{" "}
+        <Button variant="outline" disabled>
+          {" "}
+          برون بری | export
+        </Button>{" "}
       </header>
       <div className="flex gap-3 mt-5">
         <Input placeholder="جستجو کد ملی" name="national_id_number" ref={nationalIdNumberRef} />
@@ -109,7 +110,7 @@ function Customers() {
       </div>
       <div className="rounded-md border mt-3 ">
         <Table dir="rtl">
-          <TableCaption> مشاهده جدیدترین مشتریان (۵۰)</TableCaption>
+          <TableCaption> مشاهده جدیدترین مشتریان (۲۰)</TableCaption>
           <TableHeader>
             <TableRow>
               <TableHead className="text-right">کد ملی</TableHead>
@@ -126,7 +127,7 @@ function Customers() {
                   <TableCell>{customer.full_name}</TableCell>
                   <TableCell>{customer.phone_number}</TableCell>
                   <TableCell className="text-right flex justify-center gap-2">
-                    <Tooltip>
+                    <Tooltip delayDuration={700}>
                       <TooltipTrigger asChild>
                         <Button asChild variant="secondary" size="icon" className="size-8 text-blue-600">
                           <Link to={`/customers/edit/${customer.id}`}>
@@ -138,7 +139,7 @@ function Customers() {
                         <p className="font-iransans">ویرایش مشتری</p>
                       </TooltipContent>
                     </Tooltip>
-                    <Tooltip>
+                    <Tooltip delayDuration={700}>
                       <TooltipTrigger asChild>
                         <Button asChild variant="secondary" size="icon" className="size-8 text-violet-500">
                           <Link to={`/customers/${customer.id}`}>
@@ -151,7 +152,7 @@ function Customers() {
                       </TooltipContent>
                     </Tooltip>
 
-                    <Tooltip>
+                    <Tooltip delayDuration={700}>
                       <TooltipTrigger asChild>
                         <Button
                           type="button"

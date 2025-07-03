@@ -93,88 +93,43 @@ function CustomerEdit() {
         <div className="flex justify-between items-center ">
           <Label className="w-[250px]">نام و نام خانوادگی</Label>
           <div className="w-full">
-            <Input
-              type="text"
-              name="full_name"
-              onChange={handleChange}
-              value={form.full_name}
-            />
-            {errors.full_name && (
-              <p className="text-red-500 text-sm mt-1 ">{errors.full_name}</p>
-            )}
+            <Input type="text" name="full_name" onChange={handleChange} value={form.full_name} />
+            {errors.full_name && <p className="text-red-500 text-sm mt-1 ">{errors.full_name}</p>}
           </div>
         </div>
         <div className="flex justify-between items-center ">
           <Label className="w-[250px]"> کد ملی </Label>
           <div className="w-full">
             {" "}
-            <Input
-              type="text"
-              name="national_id_number"
-              onChange={handleChange}
-              value={form.national_id_number}
-            />
-            {errors.national_id_number && (
-              <p className="text-red-500 text-sm mt-1 ">
-                {errors.national_id_number}
-              </p>
-            )}
+            <Input type="text" name="national_id_number" onChange={handleChange} value={form.national_id_number} />
+            {errors.national_id_number && <p className="text-red-500 text-sm mt-1 ">{errors.national_id_number}</p>}
           </div>
         </div>
         <div className="flex justify-between items-center ">
           <Label className="w-[250px]">شماره تماس </Label>
           <div className="w-full">
-            <Input
-              type="text"
-              name="phone_number"
-              onChange={handleChange}
-              value={form.phone_number}
-            />
-            {errors.phone_number && (
-              <p className="text-red-500 text-sm mt-1 ">
-                {errors.phone_number}
-              </p>
-            )}
+            <Input type="text" name="phone_number" onChange={handleChange} value={form.phone_number} />
+            {errors.phone_number && <p className="text-red-500 text-sm mt-1 ">{errors.phone_number}</p>}
           </div>
         </div>
         <div className="flex justify-between items-center ">
           <Label className="w-[250px]">آدرس </Label>
           <div className="w-full">
-            <Textarea
-              row="3"
-              name="address"
-              className="resize-none"
-              onChange={handleChange}
-              value={form.address}
-            />
-            {errors.address && (
-              <p className="text-red-500 text-sm mt-1 ">{errors.address}</p>
-            )}
+            <Textarea row="3" name="address" className="resize-none" onChange={handleChange} value={form.address} />
+            {errors.address && <p className="text-red-500 text-sm mt-1 ">{errors.address}</p>}
           </div>
         </div>
         <div className="flex justify-between items-center ">
           <Label className="w-[250px]">کد پستی </Label>
           <div className="w-full">
-            <Input
-              type="text"
-              name="post_code"
-              onChange={handleChange}
-              value={form.post_code}
-            />
-            {errors.post_code && (
-              <p className="text-red-500 text-sm mt-1 ">{errors.post_code}</p>
-            )}
+            <Input type="text" name="post_code" onChange={handleChange} value={form.post_code} />
+            {errors.post_code && <p className="text-red-500 text-sm mt-1 ">{errors.post_code}</p>}
           </div>
         </div>
         <div className="flex justify-between items-center ">
           <Label className="w-[250px]">تصویر کارت ملی</Label>
           <div className="w-full">
-            <Button
-              type="button"
-              onClick={pickFile}
-              variant="outline"
-              className="w-full"
-            >
+            <Button type="button" onClick={pickFile} variant="outline" className="w-full">
               انتخاب تصویر کارت ملی
             </Button>
           </div>
@@ -199,13 +154,7 @@ function CustomerEdit() {
               </AlertDescription>
             </Alert>
           ))}
-        {filePath && (
-          <img
-            src={`secure-image://${filePath}`}
-            alt="کارت ملی"
-            className="max-h-[300px] mt-3"
-          />
-        )}
+        {filePath && <img src={`file://${filePath}`} alt="کارت ملی" className="max-h-[300px] mt-3" />}
       </form>
     </div>
   );

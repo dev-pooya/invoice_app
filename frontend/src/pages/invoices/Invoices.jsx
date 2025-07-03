@@ -14,8 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { REGEXP_ONLY_DIGITS } from "input-otp";
-import { Eye, Scroll, Trash2, UserPen } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, Scroll, Trash2, UserPen } from "lucide-react";
 import { commaSeprate } from "../../lib/utils";
 import { seprateDateParts } from "../../lib/utils";
 import EmptyData from "../../components/EmptyData";
@@ -27,24 +26,30 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import TableSkeleton from "../../components/TableSkeleton";
 
 function Invoices() {
-  const [invoices, setInvoices] = useState([]);
-
+  // const [invoices, setInvoices] = useState([]);
+  const [pageData, setPageData] = useState({});
   const [pendding, setPendding] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const { totalPages } = pageData;
 
   // input refs
   const numberRef = useRef(null);
   const nationalIdNumberRef = useRef(null);
 
   useEffect(() => {
-    window.electronAPI.getTodayInvoices().then((res) => {
+    window.electronAPI.paginateInvoices(currentPage).then((res) => {
       setPendding(false);
-      return setInvoices(res);
+      return setPageData(res);
     });
-  }, []);
+  }, [currentPage]);
 
   async function handleSearchInvoice() {
     const searchQuery = {};
-    let result = [];
+    let result = {
+      currentPage: 1,
+      totalPages: 1,
+      totalRecords: 0,
+    };
     // get the values and validate them
     const national_id_number = nationalIdNumberRef.current.value.trim();
     const number = numberRef.current.value.trim();
@@ -62,23 +67,33 @@ function Invoices() {
     }
 
     if (searchQuery.name === "number") {
-      result = await window.electronAPI.getInvoiceByNumber(formatInvoiceNumberInput(number));
+      result.invoices = await window.electronAPI.getInvoiceByNumber(formatInvoiceNumberInput(number));
       setPendding(false);
     } else if (searchQuery.name === "national_id_number") {
-      result = await window.electronAPI.getInvoiceByNationalId(national_id_number);
+      result.invoices = await window.electronAPI.getInvoiceByNationalId(national_id_number);
       setPendding(false);
     } else {
       result = await window.electronAPI.getTodayInvoices();
       setPendding(false);
     }
 
-    setInvoices(result);
+    setPageData(result);
   }
 
   async function deleteInvoice(id) {
     const result = await window.electronAPI.deleteInvoice(id);
     if (result) {
-      setInvoices((prevs) => prevs.filter((invoice) => invoice.id !== result));
+      setPageData((prevs) => ({ ...prevs, invoices: prevs.invoices.filter((invoice) => invoice.id !== result) }));
+    }
+  }
+
+  function changeCurrentPage(target) {
+    let page = target;
+    if (target <= 0) page = 1;
+    if (target > totalPages) page = totalPages;
+    if (page !== currentPage) {
+      setPendding(true);
+      setCurrentPage(page);
     }
   }
 
@@ -86,13 +101,9 @@ function Invoices() {
     <div className="p-5">
       <header className="flex items-center gap-1">
         <h1 className="text-xl font-semibold ml-auto">لیست فاکتورها</h1>
-
-        <Link to={"/"}>
-          <Button variant="outline"> درون ریزی | import</Button>{" "}
-        </Link>
-        <Link to={"/"}>
-          <Button variant="outline"> برون بری | export</Button>{" "}
-        </Link>
+        <Button variant="outline" disabled>
+          <Link to={"/"}>برون بری | export</Link>
+        </Button>
       </header>
       <div className="flex gap-3 mt-5">
         <Input dir="ltr" placeholder="جستجو شماره فاکتور " name="number" ref={numberRef} />
@@ -116,8 +127,8 @@ function Invoices() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {!pendding && invoices.length ? (
-              invoices.map((invoice) => (
+            {!pendding && pageData?.invoices?.length ? (
+              pageData.invoices.map((invoice) => (
                 <TableRow className="" key={invoice.id}>
                   <TableCell className="font-medium">{invoice.number}</TableCell>
                   <TableCell>{invoice.full_name}</TableCell>
@@ -132,7 +143,7 @@ function Invoices() {
                     )}
                   </TableCell>
                   <TableCell className="text-right flex justify-center gap-2">
-                    <Tooltip>
+                    <Tooltip delayDuration={700}>
                       <TooltipTrigger>
                         <Button asChild variant="secondary" size="icon" className="size-8 text-violet-500">
                           <Link to={`/invoices/${invoice.id}`}>
@@ -175,6 +186,22 @@ function Invoices() {
             )}
           </TableBody>
         </Table>
+        <footer className="my-5 flex justify-center gap-3 flex-wrap" dir="ltr">
+          <Button size="sm" variant="outline" onClick={() => changeCurrentPage(currentPage - 1)}>
+            <ChevronLeft />
+            <span> قبلی</span>
+          </Button>
+
+          {Array.from({ length: totalPages }, (_, i) => (
+            <Button size="sm" variant="outline" key={i} onClick={() => changeCurrentPage(i + 1)}>
+              {i + 1}
+            </Button>
+          ))}
+          <Button size="sm" variant="outline" onClick={() => changeCurrentPage(currentPage + 1)}>
+            <span> بعدی</span>
+            <ChevronRight />
+          </Button>
+        </footer>
       </div>
     </div>
   );

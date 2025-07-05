@@ -11,6 +11,7 @@ import InvoiceCreate from "./pages/invoices/InvoiceCreate";
 import InvoiceShow from "./pages/invoices/InvoiceShow";
 import Backups from "./pages/backups/Backups";
 import Dashboard from "./pages/dashboard/Dashboard";
+import Products from "./pages/products/Products";
 
 async function getCustomer(id) {
   const result = await window.electronAPI.getCustomerById(id);
@@ -50,6 +51,10 @@ const router = createMemoryRouter([
           { path: "create", Component: InvoiceCreate },
           { path: ":id", Component: InvoiceShow, loader: async ({ params }) => await getInvoice(parseInt(params.id)) },
         ],
+      },
+      {
+        path: "products",
+        Component: Products,
       },
       {
         path: "backups",

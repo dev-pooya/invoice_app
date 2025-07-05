@@ -14,7 +14,7 @@ function InvoiceShow() {
   // handle invoice print
   function handlePrintInvoice(e) {
     if (window.electronAPI?.printInvoice) {
-      window.electronAPI.printInvoice({ silent: false, landscape: true, pagesPerSheet: 1, pageSize: "A5" }); // you can pass more options later
+      window.electronAPI.printInvoice({ silent: true, landscape: true, pagesPerSheet: 1, pageSize: "A5" }); // you can pass more options later
     } else {
       alert("Printing not available in this environment.");
     }
@@ -35,11 +35,16 @@ function InvoiceShow() {
   }
 
   return (
-    <div className="p-5 bg-white text-black dark:bg-white dark:text-black">
-      <aside className="no-print flex items-center gap-3">
+    <div className="p-5 min-h-full dark:bg-white dark:text-black">
+      <aside className="no-print flex items-center gap-3 ">
         <h1 className="text-2xl font-semibold ml-auto">اطلاعات فاکتور </h1>
-        <Button type="button" onClick={handleSaveInvoiceAsPdf} variant="outline" className="w-xs cursor-pointer">
-          ذحیره به صورت PDF
+        <Button
+          type="button"
+          onClick={handleSaveInvoiceAsPdf}
+          variant="secondary"
+          className="w-xs cursor-pointer border"
+        >
+          ذحیره به صورت
         </Button>
         <Button type="button" onClick={handlePrintInvoice} className="w-xs cursor-pointer">
           پرینت فاکتور{" "}
@@ -95,8 +100,10 @@ function InvoiceShow() {
               <tr>
                 <th className="w-[40px] text-sm pt-3">ردیف</th>
                 <th className="pt-2 align-middle">شرح</th>
-                <th className="min-w-[80px]">تعداد</th>
-                <th className="pt-3">فی </th>
+                {invoice.category === "melton" && <th className="pt-3 w-[60px]">عیار</th>}
+                <th className="pt-3 w-[90px]">{invoice.category === "melton" ? "وزن (گرم)" : "تعداد"}</th>
+                {invoice.category === "melton" && <th className="pt-3 w-[90px]">وزن (۷۵۰)</th>}
+                <th className="pt-3">{invoice.category === "melton" ? "فی (۷۵۰)" : "فی"} </th>
                 <th className="pt-3">قیمت (ریال)</th>
               </tr>
             </thead>
@@ -105,17 +112,26 @@ function InvoiceShow() {
                 invoice.items.map((item, index) => (
                   <tr key={item.id}>
                     <td className="font-iransans text-center border-2 border-black py-1 text-sm">{index + 1}</td>
-                    <td className="font-iransans border-2 border-black px-2 text-sm">{item.title}</td>
-                    <td className="font-iransans text-center border-2 border-black ">{item.qty}</td>
+                    <td className="font-iransans border-2 border-black px-2 text-sm min-w-[220px]">{item.title}</td>
+                    {invoice.category === "melton" && (
+                      <td className="font-iransans border-2 border-black text-center text-sm">{item.kartage}</td>
+                    )}
+                    <td className="font-iransans text-center border-2  border-black ">{item.qty}</td>
+                    {invoice.category === "melton" && (
+                      <td className="font-iransans border-2 border-black text-center text-sm">
+                        {((item.kartage * item.qty) / 750).toFixed(3)}
+                      </td>
+                    )}
                     <td className="font-iransans text-left border-2 border-black px-2 ">{commaSeprate(item.fee)}</td>
-                    <td className="font-iransans text-left border-2 border-black px-2">
-                      {commaSeprate(Math.floor(parseInt(item.fee) * parseFloat(item.qty)))}
-                    </td>
+                    <td className="font-iransans text-left border-2 border-black px-2">{commaSeprate(item.price)}</td>
                   </tr>
                 ))}
 
               <tr key={"00"}>
-                <td className="font-nastalig border-2 border-black px-1 py-2" colSpan={4}>
+                <td
+                  className="font-nastalig border-2 border-black px-1 py-2"
+                  colSpan={invoice.category === "melton" ? 6 : 4}
+                >
                   <div className="flex justify-between items-center">
                     <span className="shrink-0 relative top-1">جمع کل به حروف : </span>
                     <span className="font-iransans text-sm tracking-tight ">
@@ -130,7 +146,10 @@ function InvoiceShow() {
                 </td>
               </tr>
               <tr key={"01"}>
-                <td className="font-nastalig border-2 border-black px-1 py-2" colSpan={4}>
+                <td
+                  className="font-nastalig border-2 border-black px-1 py-2"
+                  colSpan={invoice.category === "melton" ? 6 : 4}
+                >
                   <div className="flex justify-between items-center">
                     <span className="shrink-0 relative top-1">شماره کارت بانکی : </span>
                     <span className="font-iransans text-sm tracking-tight ">{invoice.bank_number}</span>

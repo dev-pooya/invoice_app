@@ -1,4 +1,6 @@
-const { db } = require("../db");
+const { getDbInstance } = require("../db");
+
+const db = getDbInstance();
 
 function generateInvoiceNumber(date) {
   const prefix = `${date}-`;
@@ -20,7 +22,7 @@ const createInvoice = db.transaction((invoiceData) => {
   const { customer_id, bank_number, date, type, category, items } = invoiceData;
 
   const total = items.reduce((sum, item) => {
-    return sum + parseFloat(item.qty) * parseInt(item.fee);
+    return sum + parseInt(item.price);
   }, 0);
 
   const number = generateInvoiceNumber(date);
@@ -31,21 +33,21 @@ const createInvoice = db.transaction((invoiceData) => {
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
 
-  const result = invoiceStmt.run(customer_id, number, date, total, bank_number, type, category || null);
+  const result = invoiceStmt.run(customer_id, number, date, total, bank_number, type, category);
 
   const invoice_id = result.lastInsertRowid;
 
   // Bulk insert items
   if (items.length > 0) {
-    const placeholders = items.map(() => `(?, ?, ?, ?)`).join(", ");
+    const placeholders = items.map(() => `(?, ?, ?, ?, ?, ?, ?)`).join(", ");
     const values = [];
 
     for (const item of items) {
-      values.push(invoice_id, item.title, parseInt(item.fee), parseFloat(item.qty));
+      values.push(invoice_id, item.product_id, item.title, item.fee, item.qty, item.kartage || null, item.price);
     }
 
     const itemInsertQuery = `
-      INSERT INTO invoice_items (invoice_id, title, fee, qty)
+      INSERT INTO invoice_items (invoice_id, product_id, title, fee, qty, kartage, price)
       VALUES ${placeholders}
     `;
 
@@ -141,7 +143,7 @@ function paginateInvoiceByCustomerId(id, currentPage = 1) {
   const stmt = db.prepare(`
     SELECT * FROM invoices
     WHERE customer_id = ?
-    ORDER BY date DESC
+    ORDER BY created_at DESC
     LIMIT ? OFFSET ?
   `);
 
@@ -164,8 +166,13 @@ function paginateInvoices(currentPage = 1) {
   const offset = (currentPage - 1) * limit;
 
   const stmt = db.prepare(`
-    SELECT * FROM invoices
-    ORDER BY date DESC
+    SELECT 
+      invoices.*,
+      customers.full_name,
+      customers.national_id_number
+    FROM invoices
+    JOIN customers ON customers.id = invoices.customer_id
+    ORDER BY invoices.created_at DESC
     LIMIT ? OFFSET ?
   `);
 

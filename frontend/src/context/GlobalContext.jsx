@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useRef, useState } from "react";
+import React, { createContext, useContext, useMemo, useRef, useState } from "react";
 import { generateId, getToday } from "../lib/utils";
 
 // 1️ Create the context
@@ -12,6 +12,7 @@ export const GlobalProvider = ({ children }) => {
   const [invoiceFormItems, setInvoiceFormItems] = useState([]);
   const [invoiceFormDate, setInvoiceFormDate] = useState(getToday());
   const [invoiceFormType, setInvoiceFormType] = useState("sell");
+  const [invoiceFormCategory, setInvoiceFormCategory] = useState("melton");
   const [isManualDatePicking, setIsManualDatePicking] = useState(false);
 
   // input refs
@@ -46,6 +47,7 @@ export const GlobalProvider = ({ children }) => {
       date: invoiceFormDate,
       bank_number: invoiceFormBankNumberRef.current.value.trim(),
       type: invoiceFormType,
+      category: invoiceFormCategory,
       items: invoiceFormItems,
     };
   }
@@ -68,7 +70,7 @@ export const GlobalProvider = ({ children }) => {
         isManualDatePicking,
         invoiceFormItems,
         invoiceFormType,
-
+        invoiceFormCategory,
         addItem,
         removeItem,
         findCustomer,
@@ -79,7 +81,7 @@ export const GlobalProvider = ({ children }) => {
         setInvoiceFormCustomer,
         getInvoiceFormData,
         resetInvoiceForm,
-
+        setInvoiceFormCategory,
         invoiceFormBankNumberRef,
       }}
     >

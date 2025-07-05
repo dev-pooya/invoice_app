@@ -1,5 +1,6 @@
-const { db } = require("../db");
+const { getDbInstance } = require("../db");
 
+const db = getDbInstance();
 function createCustomer(data) {
   const stmt = db.prepare(`
     INSERT INTO customers (full_name, national_id_number, address, phone_number, national_card_path, post_code)

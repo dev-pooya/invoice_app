@@ -1,6 +1,12 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from "@/components/ui/input-otp";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
+
+import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
+
+import { cn } from "@/lib/utils";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Card,
   CardAction,
@@ -36,19 +42,12 @@ import { generateId } from "../../lib/utils";
 import { useGlobalContext } from "../../context/GlobalContext";
 import EmptyData from "../../components/EmptyData";
 import { useNavigate } from "react-router";
-
-const initialItemForm = {
-  title: "",
-  qty: "",
-  fee: "",
-};
+import InvoiceItemForm from "../../components/InvoiceItemForm";
 
 function InvoiceCreate() {
   // states for item form
-  const [itemForm, setItemForm] = useState(initialItemForm);
+
   const [errors, setErrors] = useState(null);
-  // refs
-  const firstInputRef = useRef(null);
 
   const navigate = useNavigate();
 
@@ -70,43 +69,9 @@ function InvoiceCreate() {
     getInvoiceFormData,
     resetInvoiceForm,
     invoiceFormBankNumberRef,
+    invoiceFormCategory,
+    setInvoiceFormCategory,
   } = useGlobalContext();
-
-  // handle the submition of second form for adding the items to the invoice
-  function handleSubmitItem(e) {
-    e.preventDefault();
-
-    // validate the form
-    const errors = {};
-
-    // title: required
-    if (!itemForm.title.trim()) {
-      errors.title = "  شرح کالا را وارد کنید   ";
-    }
-
-    //  qty: required and digits
-    if (!/^\d+(\.\d+)?$/.test(itemForm.qty.trim())) {
-      errors.qty = "تعداد را به عدد وارد کنید";
-    }
-    // fee: required
-    if (!/^\d+$/.test(itemForm.fee.trim())) {
-      errors.fee = "مقدار فی را به عدد وارد کنید";
-    }
-
-    if (Object.keys(errors).length > 0) {
-      setErrors(errors);
-      return;
-    }
-
-    // there is safe data
-    addItem(itemForm);
-    // reset the form
-    setItemForm(initialItemForm);
-    setErrors(null);
-
-    // Focus on the first input
-    firstInputRef.current?.focus();
-  }
 
   // Search the customer form event
   async function handleSearchCustomer(e) {
@@ -120,6 +85,7 @@ function InvoiceCreate() {
   // handle invoice submition
   async function handleInvoiceSubmition(e) {
     const formData = getInvoiceFormData();
+
     if (!formData) {
       setErrors((prevs) => ({ ...prevs, customer: "لطفا یک مشتری انتخاب کنید و حداقل یک محصول به فاکتور اضافه کنید" }));
       return;
@@ -231,14 +197,29 @@ function InvoiceCreate() {
                   <RadioGroupItem value="buy" id="buy" />
                   <span>فاکتور خرید</span>
                 </Label>
-                <Label className="has-[[data-state=checked]]:border-ring has-[[data-state=checked]]:bg-input/20  rounded-md border p-3">
+                <Label className="has-[[data-state=checked]]:border-ring has-[[data-state=checked]]:bg-input/20 rounded-md border p-3">
                   <RadioGroupItem value="sell" id="sell" />
                   <span>فاکتور فروش</span>
                 </Label>
               </RadioGroup>
+              <RadioGroup
+                value={invoiceFormCategory}
+                onValueChange={(value) => setInvoiceFormCategory(value)}
+                dir="rtl"
+                className="flex gap-3"
+              >
+                <Label className="has-[[data-state=checked]]:border-ring has-[[data-state=checked]]:bg-input/20  has-disabled:opacity-60  rounded-md border p-3">
+                  <RadioGroupItem value="melton" id="melton" disabled={invoiceFormItems.length} />
+                  <span>آبشده </span>
+                </Label>
+                <Label className="has-[[data-state=checked]]:border-ring has-[[data-state=checked]]:bg-input/20 has-disabled:opacity-60  rounded-md border p-3">
+                  <RadioGroupItem value="coin" id="coin" disabled={invoiceFormItems.length} />
+                  <span>سکه </span>
+                </Label>
+              </RadioGroup>
             </header>
             <section className="grid grid-cols-2  gap-y-2 ">
-              <h2 className="border border-primary/40 rounded-r-lg p-3">نام و نام خانوادگی :</h2>
+              <h2 className="border border-primary/40  rounded-r-lg p-3 show-lg">نام و نام خانوادگی :</h2>
               <p className="border border-r-0 border-primary/40 rounded-l-lg p-3">
                 {invoiceFormCustomer ? invoiceFormCustomer.full_name : ""}
               </p>
@@ -264,7 +245,8 @@ function InvoiceCreate() {
           </form>
 
           <Separator className="my-10" />
-          <form className="flex gap-3 mb-5 w-full" onSubmit={handleSubmitItem}>
+          <InvoiceItemForm category={invoiceFormCategory} />
+          {/* <form className="flex gap-3 mb-5 w-full" onSubmit={handleSubmitItem}>
             <div className="min-w-[350px]">
               <Input
                 name="title"
@@ -305,12 +287,17 @@ function InvoiceCreate() {
               <PlusCircle />
               <span>افزودن</span>
             </Button>
-          </form>
+          </form> */}
           <Table dir="rtl">
             <TableHeader>
               <TableRow>
                 <TableHead className="text-right ">شرح کالا</TableHead>
-                <TableHead className="text-right  w-[100px]">تعداد</TableHead>
+                {invoiceFormCategory === "melton" && <TableHead className="text-right w-[100px]">عیار</TableHead>}
+                <TableHead className="text-right  w-[100px]">
+                  {invoiceFormCategory === "coin" ? "تعداد" : "وزن"}
+                </TableHead>
+                {invoiceFormCategory === "melton" && <TableHead className="text-right w-[120px]">وزن (۷۵۰)</TableHead>}
+
                 <TableHead className="text-right ">فی</TableHead>
                 <TableHead className="text-right ">جمع</TableHead>
                 <TableHead className="text-right  w-[80px]">حذف</TableHead>
@@ -321,11 +308,14 @@ function InvoiceCreate() {
                 {invoiceFormItems.map((item) => (
                   <TableRow className="" key={item.id}>
                     <TableCell className="font-medium">{item.title}</TableCell>
+                    {invoiceFormCategory === "melton" && <TableCell className="font-medium">{item.kartage}</TableCell>}
                     <TableCell className="font-medium">{item.qty}</TableCell>
+                    {invoiceFormCategory === "melton" && (
+                      <TableCell className="font-medium">{(item.kartage * item.qty) / 750}</TableCell>
+                    )}
+
                     <TableCell className="font-medium">{commaSeprate(item.fee)}</TableCell>
-                    <TableCell className="font-medium">
-                      {commaSeprate(Math.floor(parseFloat(item.qty) * parseInt(item.fee)))}
-                    </TableCell>
+                    <TableCell className="font-medium">{commaSeprate(item.price)}</TableCell>
                     <TableCell className="font-medium">
                       <Button
                         variant="destructive"
@@ -343,7 +333,7 @@ function InvoiceCreate() {
             ) : (
               <TableBody>
                 <TableRow>
-                  <TableCell colSpan={5}>
+                  <TableCell colSpan={invoiceFormCategory === "melton" ? 6 : 5}>
                     <div className="flex justify-center">
                       <EmptyData message="هیج کالایی افزوده نشده" />
                     </div>

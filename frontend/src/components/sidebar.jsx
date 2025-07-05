@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { NavLink } from "react-router";
-import { ClipboardList, ClipboardPen, DatabaseBackup, Moon, Sun, UserRoundPlus, Users } from "lucide-react";
+import { ClipboardList, ClipboardPen, DatabaseBackup, ListTodo, Moon, Sun, UserRoundPlus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Logo from "./Logo";
 
@@ -80,6 +80,20 @@ function Sidebar() {
           >
             <ClipboardPen className="text-foreground/85" size={22} />
             <span>فاکتور جدید</span>
+          </NavLink>
+        </li>
+        <li className="flex items-center">
+          <NavLink
+            to="/products"
+            className={({ isActive }) =>
+              isActive
+                ? "bg-accent p-3 w-full flex items-center gap-3 border-l-4 border-primary"
+                : "p-3 w-full flex items-center gap-3"
+            }
+            end
+          >
+            <ListTodo className="text-foreground/85" size={22} />
+            <span> محصولات</span>
           </NavLink>
         </li>
         <li className="flex items-center">

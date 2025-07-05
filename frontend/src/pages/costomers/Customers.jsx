@@ -110,7 +110,7 @@ function Customers() {
       </div>
       <div className="rounded-md border mt-3 ">
         <Table dir="rtl">
-          <TableCaption> مشاهده جدیدترین مشتریان (۲۰)</TableCaption>
+          <TableCaption className="my-2"> مشاهده جدیدترین مشتریان (۲۰)</TableCaption>
           <TableHeader>
             <TableRow>
               <TableHead className="text-right">کد ملی</TableHead>

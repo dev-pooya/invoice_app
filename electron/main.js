@@ -26,10 +26,12 @@ const {
 } = require("./db/invoices");
 const { createBackup, restoreBackup } = require("./ipc/backup");
 const { getMimeType } = require("./helpers/helper");
+const { createProduct, getAllProducts, deleteProduct, editProduct } = require("./db/products");
+const { getDbInstance, runMigrations } = require("./db");
 
 // teh global variable to access teh window
 let win;
-
+let isBusy = false;
 // Prevent multiple instances
 const gotTheLock = app.requestSingleInstanceLock();
 
@@ -47,8 +49,8 @@ if (!gotTheLock) {
 
 function createWindow() {
   win = new BrowserWindow({
-    width: 1800,
-    height: 750,
+    width: 1250, // production is 1250
+    height: 950, // production is 750
     titleBarStyle: "hidden", // Optional, good for macOS
     minWidth: 1200,
     minHeight: 650,
@@ -61,15 +63,15 @@ function createWindow() {
   });
 
   // Load dev server in dev mode
-  // win.loadURL("http://localhost:5173");
+  win.loadURL("http://localhost:5173");
 
   //for production mode
-  win.loadFile(path.join(__dirname, "../frontend/dist/index.html"));
+  // win.loadFile(path.join(__dirname, "../frontend/dist/index.html"));
 
-  // win.webContents.openDevTools(); // ← This opens DevTools automatically
+  win.webContents.openDevTools(); // ← This opens DevTools automatically
 }
-
 app.whenReady().then(() => {
+  runMigrations();
   createWindow();
 
   // Remove the default menu
@@ -169,16 +171,14 @@ ipcMain.handle("customers:delete", (event, id) => {
   const imagePath = customer?.national_card_path || null;
   try {
     const result = deleteCustomer(id);
-    console.log(`Customer ${id} deleted from database.`);
 
     // 3. Delete file from disk
     if (imagePath && fs.existsSync(imagePath)) {
       fs.unlinkSync(imagePath);
-
-      return result;
     } else {
       console.log("Image file does not exist or no image path was set.");
     }
+    return result;
   } catch (err) {
     console.error("Error deleting customer or image:", err);
   }
@@ -229,6 +229,7 @@ ipcMain.handle("invoice:getById", (event, id) => getInvoiceById(id));
 ipcMain.handle("invoice:delete", (event, id) => (deleteInvoice(id)?.changes > 0 ? id : null));
 
 // handle the print
+// TODO add printing waiter
 ipcMain.handle("invoice:print", async (event, options = {}) => {
   win.webContents.print(options, (success, errorType) => {
     if (!success) console.log(errorType);
@@ -338,7 +339,7 @@ ipcMain.handle("backup:restoreFull", async () => {
     buttons: ["Cancel", "Restore"],
     defaultId: 1,
     cancelId: 0,
-    message: "Restoring will overwrite your current data.\nAre you sure you want to proceed?",
+    message: "بازیابی اطلاعات باعث از بین رفتن اطلاعات کنونی میشود",
   });
 
   if (confirm !== 1) return false;
@@ -354,3 +355,11 @@ ipcMain.handle("backup:restoreFull", async () => {
     isBusy = false;
   }
 });
+
+// product minipulations
+ipcMain.handle("product:add", async (event, name) => {
+  return createProduct(name);
+});
+ipcMain.handle("product:edit", async (event, id, name) => editProduct(id, name));
+ipcMain.handle("product:getAll", async () => getAllProducts());
+ipcMain.handle("product:delete", (event, id) => deleteProduct(id));

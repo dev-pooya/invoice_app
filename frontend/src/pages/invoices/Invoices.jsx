@@ -14,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { ChevronLeft, ChevronRight, Eye, Scroll, Trash2, UserPen } from "lucide-react";
+import { ChevronLeft, ChevronRight, Coins, Droplets, Eye, Scroll, Trash2, UserPen } from "lucide-react";
 import { commaSeprate } from "../../lib/utils";
 import { seprateDateParts } from "../../lib/utils";
 import EmptyData from "../../components/EmptyData";
@@ -122,7 +122,8 @@ function Invoices() {
               <TableHead className="text-right">کدملی مشتری</TableHead>
               <TableHead className="text-right">تاریخ</TableHead>
               <TableHead className="text-right">جمع مبلغ</TableHead>
-              <TableHead className="text-right">نوع فاکتور </TableHead>
+              <TableHead className="text-center">نوع فاکتور </TableHead>
+              <TableHead className="text-center">نوع محصول </TableHead>
               <TableHead className="text-center">عملیات</TableHead>
             </TableRow>
           </TableHeader>
@@ -135,11 +136,18 @@ function Invoices() {
                   <TableCell>{invoice.national_id_number}</TableCell>
                   <TableCell>{seprateDateParts(invoice.date)}</TableCell>
                   <TableCell>{commaSeprate(invoice.total)}</TableCell>
-                  <TableCell>
+                  <TableCell className="text-center">
                     {invoice.type === "sell" ? (
                       <span className="text-red-600"> فروش</span>
                     ) : (
                       <span className="text-green-600"> خرید</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {invoice.category === "coin" ? (
+                      <Coins className="text-yellow-500 mx-auto" />
+                    ) : (
+                      <Droplets className="text-yellow-500 mx-auto" />
                     )}
                   </TableCell>
                   <TableCell className="text-right flex justify-center gap-2">

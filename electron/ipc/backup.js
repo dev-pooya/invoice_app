@@ -3,6 +3,7 @@ const path = require("path");
 const archiver = require("archiver");
 const extract = require("extract-zip");
 const { app } = require("electron");
+const { logInfo, logError } = require("../helpers/logger");
 
 const userData = app.getPath("userData");
 const dbPath = path.join(userData, "database.sqlite");
@@ -33,28 +34,61 @@ function createBackup(destination) {
 async function restoreBackup(zipFilePath) {
   const tempRestorePath = path.join(userData, "temp_restore");
 
-  // Clean temp folder
-  await fs.remove(tempRestorePath);
+  logInfo("Starting restore process...");
+  logInfo("Zip path: " + zipFilePath);
+  logInfo("Temp restore path: " + tempRestorePath);
 
-  // Extract to temp
-  await extract(zipFilePath, { dir: tempRestorePath });
+  try {
+    await fs.remove(tempRestorePath);
+    logInfo("✅ Temp folder cleaned");
 
-  const restoredDb = path.join(tempRestorePath, "database.sqlite");
-  const restoredUploads = path.join(tempRestorePath, "uploads");
+    await extract(zipFilePath, { dir: tempRestorePath });
+    logInfo("✅ Backup zip extracted");
 
-  // Validation check
-  if (!fs.existsSync(restoredDb) || !fs.existsSync(restoredUploads)) {
-    throw new Error("⚠️ Invalid backup file. Required files not found.");
+    const restoredDb = path.join(tempRestorePath, "database.sqlite");
+    const restoredUploads = path.join(tempRestorePath, "uploads");
+
+    if (!fs.existsSync(restoredDb) || !fs.existsSync(restoredUploads)) {
+      const errMsg = "⚠️ Invalid backup file. Required files not found.";
+      logError(errMsg);
+      throw new Error(errMsg);
+    }
+
+    try {
+      await fs.copy(restoredDb, dbPath, { overwrite: true });
+      logInfo("✅ Database copied");
+    } catch (err) {
+      logError("❌ Failed to copy database: " + err.message);
+      throw err;
+    }
+
+    try {
+      // ❌ Remove current uploads folder before copying
+      await fs.remove(uploadsPath);
+      logInfo("🧹 Old uploads folder removed");
+
+      await fs.copy(restoredUploads, uploadsPath, { overwrite: true });
+      logInfo("✅ Uploads folder copied");
+    } catch (err) {
+      logError("❌ Failed to copy uploads: " + err.message);
+      throw err;
+    }
+
+    try {
+      await fs.chmod(dbPath, 0o600);
+      logInfo("✅ DB file permissions set to 600");
+    } catch (err) {
+      logError("⚠️ Failed to set DB permissions: " + err.message);
+      // Not fatal
+    }
+
+    await fs.remove(tempRestorePath);
+    logInfo("🧹 Temp folder removed");
+    logInfo("✅ Restore complete.");
+  } catch (err) {
+    logError("❌ Restore failed: " + err.message);
+    throw err;
   }
-
-  // Restore directly without backup
-  await fs.copy(restoredDb, dbPath, { overwrite: true });
-  await fs.copy(restoredUploads, uploadsPath, { overwrite: true });
-  // 🛠️ FIX: ensure writable
-  await fs.chmod(dbPath, 0o600);
-
-  // Clean temp folder
-  await fs.remove(tempRestorePath);
 }
 
 module.exports = {

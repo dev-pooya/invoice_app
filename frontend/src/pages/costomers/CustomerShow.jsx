@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 
-import { ChevronLeft, ChevronRight, Eye, Scroll, Trash2, UserPen } from "lucide-react";
+import { ChevronLeft, ChevronRight, Coins, Droplets, Eye, Scroll, Trash2, UserPen } from "lucide-react";
 import { commaSeprate } from "../../lib/utils";
 import { seprateDateParts } from "../../lib/utils";
 import EmptyData from "../../components/EmptyData";
@@ -106,6 +106,7 @@ function CustomerShow() {
                   <TableHead className="text-right">تاریخ</TableHead>
                   <TableHead className="text-right">جمع مبلغ</TableHead>
                   <TableHead className="text-right">نوع فاکتور </TableHead>
+                  <TableHead className="text-right">نوع محصول </TableHead>
                   <TableHead className="text-center">عملیات</TableHead>
                 </TableRow>
               </TableHeader>
@@ -123,6 +124,13 @@ function CustomerShow() {
                           <span className="text-red-600"> فروش</span>
                         ) : (
                           <span className="text-green-600"> خرید</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {invoice.category === "coin" ? (
+                          <Coins className="text-yellow-400 mx-auto" />
+                        ) : (
+                          <Droplets className="text-yellow-400 mx-auto" />
                         )}
                       </TableCell>
                       <TableCell className="text-right flex justify-center gap-2">

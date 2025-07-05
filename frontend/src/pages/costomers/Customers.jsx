@@ -88,16 +88,20 @@ function Customers() {
     }
   }
 
+  // import custoemr
+  async function handleImportCustomer() {
+    const result = await window.electronAPI.importCustomers();
+    console.log(result);
+  }
+
   return (
     <div className="p-5">
       <header className="flex items-center gap-1">
         <h1 className="text-xl font-semibold ml-auto">لیست مشتریان</h1>
-        <Button variant="outline" disabled>
-          {" "}
+        <Button variant="outline" onClick={handleImportCustomer}>
           درون ریزی | import
         </Button>{" "}
         <Button variant="outline" disabled>
-          {" "}
           برون بری | export
         </Button>{" "}
       </header>

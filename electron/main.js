@@ -2,6 +2,7 @@
 const { app, BrowserWindow, ipcMain, Menu, dialog, protocol, shell, net } = require("electron");
 const path = require("path");
 const fs = require("fs");
+const ExcelJS = require("exceljs");
 
 const {
   createCustomer,
@@ -12,6 +13,7 @@ const {
   getCustomerById,
   getCustomerByNationalId,
   deleteCustomer,
+  insertManyCustomers,
 } = require("./db/customers");
 
 const {
@@ -25,9 +27,10 @@ const {
   paginateInvoices,
 } = require("./db/invoices");
 const { createBackup, restoreBackup } = require("./ipc/backup");
-const { getMimeType } = require("./helpers/helper");
+
 const { createProduct, getAllProducts, deleteProduct, editProduct } = require("./db/products");
-const { getDbInstance, runMigrations } = require("./db");
+const { runMigrations } = require("./db");
+const { logInfo, logError } = require("./helpers/logger");
 
 // teh global variable to access teh window
 let win;
@@ -363,3 +366,70 @@ ipcMain.handle("product:add", async (event, name) => {
 ipcMain.handle("product:edit", async (event, id, name) => editProduct(id, name));
 ipcMain.handle("product:getAll", async () => getAllProducts());
 ipcMain.handle("product:delete", (event, id) => deleteProduct(id));
+
+// import
+ipcMain.handle("import:customers", async () => {
+  try {
+    const result = await dialog.showOpenDialog({
+      title: "Import Customers from Excel",
+      filters: [{ name: "Excel Files", extensions: ["xlsx"] }],
+      properties: ["openFile"],
+    });
+
+    if (result.canceled || result.filePaths.length === 0) {
+      logInfo("📁 Customer import canceled by user.");
+      return { addedCount: 0, skipped: true };
+    }
+
+    const filePath = result.filePaths[0];
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.readFile(filePath);
+
+    const sheet = workbook.getWorksheet(1);
+    if (!sheet) {
+      logError("❌ Failed to read Excel sheet: Worksheet not found.");
+      return { addedCount: 0, error: "No worksheet found in file." };
+    }
+
+    const newCustomers = [];
+
+    sheet.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) return; // Skip header
+      if (newCustomers.length >= 1000) return; // Limit to 1000 rows
+
+      const full_name = row.getCell(1).text?.trim() || "";
+      const national_id_number = row.getCell(2).text?.trim() || "";
+      const phone_number = row.getCell(3).text?.trim() || "";
+      const address = row.getCell(4).text?.trim() || "";
+      const post_code = row.getCell(5).text?.trim() || "";
+
+      // Basic required field check (optional)
+      if (!full_name || !national_id_number) {
+        logError(`⚠️ Skipped row ${rowNumber}: missing required fields.`);
+        return;
+      }
+
+      newCustomers.push({
+        full_name,
+        national_id_number,
+        phone_number,
+        address,
+        post_code,
+      });
+    });
+
+    logInfo(`📤 Starting import of ${newCustomers.length} customers from file: ${filePath}`);
+
+    const addedCustomers = insertManyCustomers(newCustomers, 1000);
+    logInfo(`✅ Customer import completed. Added: ${addedCustomers.length}/${newCustomers.length}`);
+
+    return {
+      addedCount: addedCustomers.length,
+      totalParsed: newCustomers.length,
+      skipped: newCustomers.length - addedCustomers.length,
+    };
+  } catch (err) {
+    logError(`❌ Error during customer import: ${err.message}`);
+    return { addedCount: 0, error: err.message };
+  }
+});

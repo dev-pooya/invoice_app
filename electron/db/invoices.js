@@ -172,7 +172,7 @@ function paginateInvoices(currentPage = 1) {
       customers.national_id_number
     FROM invoices
     JOIN customers ON customers.id = invoices.customer_id
-    ORDER BY invoices.created_at DESC
+    ORDER BY invoices.id DESC
     LIMIT ? OFFSET ?
   `);
 

@@ -1,4 +1,5 @@
 const { getDbInstance } = require("../db");
+const { logInfo, logError } = require("../helpers/logger");
 
 const db = getDbInstance();
 function createCustomer(data) {
@@ -48,7 +49,9 @@ function getCustomerById(id, columns = "*") {
   return db.prepare(`SELECT ${columns} FROM customers WHERE id = ?`).get(id);
 }
 function getLatestCustomers(limit = 20) {
-  return db.prepare("SELECT * FROM customers ORDER BY created_at DESC LIMIT ?").all(limit);
+  return db
+    .prepare("SELECT id, full_name, national_id_number, phone_number FROM customers ORDER BY id DESC LIMIT ?")
+    .all(limit);
 }
 
 // search customers
@@ -76,6 +79,49 @@ const deleteCustomer = db.transaction((id) => {
   return deleteStmt.run(id);
 });
 
+function insertManyCustomers(newCustomers, maxRows = 5000) {
+  if (!Array.isArray(newCustomers) || newCustomers.length === 0) {
+    logInfo("📥 No customer data provided for import.");
+    return [];
+  }
+
+  const limitedCustomers = newCustomers.slice(0, maxRows);
+  const added = [];
+
+  const insert = db.prepare(`
+    INSERT OR IGNORE INTO customers 
+    (full_name, national_id_number, phone_number, address, post_code) 
+    VALUES (?, ?, ?, ?, ?)
+  `);
+
+  const insertTransaction = db.transaction((customers) => {
+    for (const c of customers) {
+      try {
+        insert.run(
+          c.full_name?.trim() || "",
+          c.national_id_number?.trim() || "",
+          c.phone_number?.trim() || "",
+          c.address?.trim() || "",
+          c.post_code?.trim() || ""
+        );
+        added.push(c);
+        // logInfo(`✅ Imported customer: ${c.full_name} (${c.national_id_number})`);
+      } catch (err) {
+        logError(`❌ Failed to insert customer ${c.full_name} (${c.national_id_number}): ${err.message}`);
+      }
+    }
+  });
+
+  try {
+    insertTransaction(limitedCustomers);
+    logInfo(`📦 Customer import complete: ${added.length} added out of ${limitedCustomers.length}`);
+  } catch (err) {
+    logError("❌ Customer import transaction failed: " + err.message);
+  }
+
+  return added;
+}
+
 module.exports = {
   createCustomer,
   editCustomer,
@@ -86,4 +132,5 @@ module.exports = {
   searchCustomers,
   getCustomerByNationalId,
   deleteCustomer,
+  insertManyCustomers,
 };
